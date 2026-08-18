@@ -14,7 +14,10 @@
   function markBuild(){
     document.documentElement.dataset.coursebuildBuild='rc6-unified-modern';
     const tag=q('.topbar .tag');
-    if(tag){tag.textContent='';tag.setAttribute('aria-hidden','true');}
+    if(tag){
+      if(tag.textContent)tag.textContent='';
+      if(tag.getAttribute('aria-hidden')!=='true')tag.setAttribute('aria-hidden','true');
+    }
   }
 
   function createCourseFromName(name){
@@ -57,30 +60,48 @@
       <label class="rc6-field"><span>Course name</span><input id="rc6CourseName" name="courseName" autocomplete="off" placeholder="e.g., Introduction to Business Analytics" required maxlength="120"></label>
       <div class="rc6-modal-actions"><button type="button" data-rc6-cancel>Cancel</button><button class="primary" type="submit">Create course</button></div>
     </form>`;
-    modal.showModal();
+    if(!modal.open)modal.showModal();
     setTimeout(()=>q('#rc6CourseName')?.focus(),30);
-    q('[data-rc6-cancel]',body)?.addEventListener('click',()=>modal.close());
-    q('#rc6NewCourseForm',body)?.addEventListener('submit',e=>{e.preventDefault();createCourseFromName(new FormData(e.currentTarget).get('courseName'));});
+    q('[data-rc6-cancel]',body)?.addEventListener('click',()=>modal.close(),{once:true});
+    q('#rc6NewCourseForm',body)?.addEventListener('submit',e=>{
+      e.preventDefault();
+      createCourseFromName(new FormData(e.currentTarget).get('courseName'));
+    },{once:true});
   }
 
   function interceptNewCourse(){
     document.addEventListener('click',e=>{
       const trigger=e.target.closest('#newProjectQuick,#rc3NewCourse,#createProject');
       if(!trigger)return;
-      e.preventDefault();e.stopImmediatePropagation();
+      e.preventDefault();
+      e.stopImmediatePropagation();
       openNewCourseDialog();
     },true);
   }
 
   function normalizeLanguage(){
-    const add=q('#newProjectQuick');if(add)add.textContent='+ New course';
-    const close=q('#closeModal');if(close)close.setAttribute('aria-label','Close dialog');
+    const add=q('#newProjectQuick');
+    if(add&&add.textContent!=='+ New course')add.textContent='+ New course';
+    const close=q('#closeModal');
+    if(close&&close.getAttribute('aria-label')!=='Close dialog')close.setAttribute('aria-label','Close dialog');
   }
 
   function install(){
-    markBuild();normalizeLanguage();interceptNewCourse();
-    const observer=new MutationObserver(()=>normalizeLanguage());
+    markBuild();
+    normalizeLanguage();
+    interceptNewCourse();
+
+    let scheduled=false;
+    const observer=new MutationObserver(()=>{
+      if(scheduled)return;
+      scheduled=true;
+      requestAnimationFrame(()=>{
+        scheduled=false;
+        normalizeLanguage();
+      });
+    });
     observer.observe(document.body,{subtree:true,childList:true});
   }
+
   window.addEventListener('load',()=>setTimeout(install,220));
 })();
