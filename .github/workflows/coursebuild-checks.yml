@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify required root assets
         run: |
-          for file in index.html styles.css app.js projects.js projects.css versions.js versions.css version-publish.js version-reconcile.js reconciliation-resolution.js reconciliation-resolution.css sample-course.js responsive.css product-experience-rc2.css product-experience-rc3.css product-experience-rc3.js rc3-mobile-hardening.css rc3-mobile-hardening.js _headers robots.txt; do
+          for file in index.html styles.css app.js projects.js projects.css versions.js versions.css version-publish.js version-reconcile.js reconciliation-resolution.js reconciliation-resolution.css sample-course.js responsive.css product-experience-rc2.css product-experience-rc3.css product-experience-rc3.js rc3-mobile-hardening.css rc3-mobile-hardening.js cdo-experience-rc4.css cdo-experience-rc4.js _headers robots.txt; do
             test -f "$file" || { echo "Missing $file"; exit 1; }
           done
       - name: Check browser JavaScript syntax
@@ -32,6 +32,7 @@ jobs:
           node --check cohort.js
           node --check product-experience-rc3.js
           node --check rc3-mobile-hardening.js
+          node --check cdo-experience-rc4.js
       - name: Confirm public-repo backend boundary
         run: |
           test ! -f apps-script-backend.gs
