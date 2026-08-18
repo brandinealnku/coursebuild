@@ -18,12 +18,13 @@
   <link rel="stylesheet" href="brand-experience.css" />
   <link rel="stylesheet" href="brand-components.css" />
   <link rel="stylesheet" href="responsive.css" />
+  <link rel="stylesheet" href="product-experience-rc2.css" />
 </head>
 <body>
-  <header class="topbar"><div><p class="eyebrow">ITSBAD Labs</p><h1>CourseBuild</h1></div><span class="tag">Independent User RC1</span></header>
+  <header class="topbar"><div><p class="eyebrow">ITSBAD Labs</p><h1>CourseBuild</h1></div><span class="tag">RC2 Preview</span></header>
   <main>
-    <section class="hero"><p class="eyebrow">Course architecture → working LMS.</p><h2>From what you already teach to a course ready for Canvas.</h2><p>Bring the syllabus, course plan, or materials you already have. CourseBuild helps shape the structure, generate the working pieces, and keep you in control before anything reaches Canvas.</p></section>
-    <nav class="steps" aria-label="CourseBuild workflow"><button data-view="projects">Projects</button><button data-view="profile" class="active">1. Course</button><button data-view="plan">2. Import + Plan</button><button data-view="review">3. Review</button><button data-view="build">4. Readiness + Build</button><button data-view="versions">5. Versions</button><button data-view="telemetry">6. Pilot Evidence</button><button data-view="pilot">7. External Pilot</button><button data-view="cohort">8. Pilot Cohort</button><button data-view="settings">Settings</button></nav>
+    <section class="hero"><h2>Build your course.</h2><p>Start with what you already have. CourseBuild helps you structure, review, and prepare it for Canvas while keeping every instructional decision in your hands.</p></section>
+    <nav class="steps" aria-label="CourseBuild workspace"><button data-view="projects">My courses</button><button data-view="profile" class="active">Course setup</button><button data-view="plan">Blueprint</button><button data-view="review">Content</button><button data-view="build">Canvas readiness</button><button data-view="versions">History</button><button data-view="telemetry">Pilot evidence</button><button data-view="pilot">External pilot</button><button data-view="cohort">Pilot cohort</button><button data-view="settings">Settings</button></nav>
     <section id="projects" class="view hidden"></section><section id="profile" class="view"></section><section id="plan" class="view hidden"></section><section id="review" class="view hidden"></section><section id="build" class="view hidden"></section><section id="versions" class="view hidden"></section><section id="telemetry" class="view hidden"></section><section id="pilot" class="view hidden"></section><section id="cohort" class="view hidden"></section><section id="settings" class="view hidden"></section>
   </main>
   <dialog id="modal"><button id="closeModal" class="close" aria-label="Close">×</button><div id="modalBody"></div></dialog><div id="toast" role="status"></div>
