@@ -14,20 +14,18 @@
   <link rel="stylesheet" href="reconciliation-resolution.css" />
   <link rel="stylesheet" href="projects.css" />
   <link rel="stylesheet" href="managed-storage.css" />
-  <link rel="stylesheet" href="independent-user.css" />
-  <link rel="stylesheet" href="brand-experience.css" />
-  <link rel="stylesheet" href="brand-components.css" />
   <link rel="stylesheet" href="responsive.css" />
   <link rel="stylesheet" href="product-experience-rc2.css" />
+  <link rel="stylesheet" href="product-experience-rc3.css" />
 </head>
 <body>
-  <header class="topbar"><div><p class="eyebrow">ITSBAD Labs</p><h1>CourseBuild</h1></div><span class="tag">RC2 Preview</span></header>
+  <header class="topbar"><div><p class="eyebrow">ITSBAD Labs</p><h1>CourseBuild</h1></div><span class="tag" aria-hidden="true"></span></header>
   <main>
     <section class="hero"><h2>Build your course.</h2><p>Start with what you already have. CourseBuild helps you structure, review, and prepare it for Canvas while keeping every instructional decision in your hands.</p></section>
-    <nav class="steps" aria-label="CourseBuild workspace"><button data-view="projects">My courses</button><button data-view="profile" class="active">Course setup</button><button data-view="plan">Blueprint</button><button data-view="review">Content</button><button data-view="build">Canvas readiness</button><button data-view="versions">History</button><button data-view="telemetry">Pilot evidence</button><button data-view="pilot">External pilot</button><button data-view="cohort">Pilot cohort</button><button data-view="settings">Settings</button></nav>
-    <section id="projects" class="view hidden"></section><section id="profile" class="view"></section><section id="plan" class="view hidden"></section><section id="review" class="view hidden"></section><section id="build" class="view hidden"></section><section id="versions" class="view hidden"></section><section id="telemetry" class="view hidden"></section><section id="pilot" class="view hidden"></section><section id="cohort" class="view hidden"></section><section id="settings" class="view hidden"></section>
+    <nav class="steps" aria-label="CourseBuild workspace"><button data-view="projects" class="active">My courses</button><button data-view="profile">Course setup</button><button data-view="plan">Blueprint</button><button data-view="review">Content review</button><button data-view="build">Canvas readiness</button><button data-view="versions">Adapt</button><button data-view="telemetry" hidden>Pilot evidence</button><button data-view="pilot" hidden>External pilot</button><button data-view="cohort" hidden>Pilot cohort</button><button data-view="settings">Settings</button></nav>
+    <section id="projects" class="view"></section><section id="profile" class="view hidden"></section><section id="plan" class="view hidden"></section><section id="review" class="view hidden"></section><section id="build" class="view hidden"></section><section id="versions" class="view hidden"></section><section id="telemetry" class="view hidden"></section><section id="pilot" class="view hidden"></section><section id="cohort" class="view hidden"></section><section id="settings" class="view hidden"></section>
   </main>
   <dialog id="modal"><button id="closeModal" class="close" aria-label="Close">×</button><div id="modalBody"></div></dialog><div id="toast" role="status"></div>
-  <script src="sample-course.js"></script><script src="app.js"></script><script src="versions.js"></script><script src="telemetry.js"></script><script src="version-publish.js"></script><script src="version-reconcile.js"></script><script src="reconciliation-resolution.js"></script><script src="pilot.js"></script><script src="cohort.js"></script><script src="projects.js"></script><script src="managed-storage.js"></script><script src="independent-user.js"></script><script src="brand-experience.js"></script>
+  <script src="sample-course.js"></script><script src="app.js"></script><script src="versions.js"></script><script src="telemetry.js"></script><script src="version-publish.js"></script><script src="version-reconcile.js"></script><script src="reconciliation-resolution.js"></script><script src="pilot.js"></script><script src="cohort.js"></script><script src="projects.js"></script><script src="managed-storage.js"></script><script src="product-experience-rc3.js"></script>
 </body>
 </html>
