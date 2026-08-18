@@ -1,0 +1,107 @@
+/* CourseBuild RC6.2 — contrast + navigation relationship polish */
+:root{
+  --cb-muted:#475467;
+  --cb-muted-soft:#667085;
+  --cb-accent:#4338ca;
+  --cb-accent-strong:#3730a3;
+  --cb-accent-soft:#eef2ff;
+  --cb-sidebar:#f4f6f8;
+  --cb-sidebar-active:#ebe9f7;
+}
+
+/* Readability: increase contrast without making the interface visually heavy. */
+body{color:#101828!important}
+p,.section-head p,.hero>p:last-child,.hint,.muted-text,.architecture-toolbar p,
+.rc5-next p,.rc5-course-code,.rc5-map-module small,.rc5-map-module em,
+.rc5-home-status li,.rc3-course-card p,.rc3-course-card small,
+.rc3-inspector p,.rc3-readiness-list p,.cdo-command small{
+  color:var(--cb-muted)!important;
+}
+
+.eyebrow,.section-head .eyebrow,.topbar .eyebrow,
+.rc5-kicker span,.rc5-home-blueprint header span,.rc5-next>span,
+.rc5-home-status>div span,.rc6-modal-kicker,.mobile-section-nav label{
+  color:var(--cb-muted-soft)!important;
+}
+
+/* Lavender is retained as a brand accent, but only at accessible visual strength. */
+.rc5-kicker em,.rc5-home-blueprint header button,.rc5-blueprint-intro>div>span,
+.cdo-blueprint-directive>div>span,.cdo-command-next>span,
+.rc3-section-kicker,.rc3-eyebrow{
+  color:var(--cb-accent)!important;
+}
+
+/* Navigation: clearer hierarchy and higher text contrast. */
+.steps{
+  background:var(--cb-sidebar)!important;
+  border-color:#d9dee7!important;
+}
+.steps button{
+  color:#475467!important;
+}
+.steps button:hover{
+  color:#101828!important;
+  background:#eaecf0!important;
+}
+.steps button.active{
+  color:#312e81!important;
+  background:var(--cb-sidebar-active)!important;
+  box-shadow:none!important;
+}
+
+/* Create an intentional break between the hero and the application workspace. */
+.hero{
+  margin-bottom:18px!important;
+  border-bottom:1px solid #e4e7ec!important;
+}
+
+/* In desktop/sidebar compositions, keep the navigation visually independent. */
+@media(min-width:761px){
+  .steps{
+    margin-top:0!important;
+    border-radius:12px!important;
+  }
+  .view{
+    padding-top:28px!important;
+  }
+}
+
+/* Labels, metadata, state and helper copy should never fade into the background. */
+.form label,.rc3-setup-form label,.rc3-inspector label,.rc6-field span,
+.project-chrome label,.rc3-readiness-list strong,.rc5-trust-bar span,
+.tag,.badge,.rc3-status{
+  color:#344054!important;
+}
+
+/* Stronger field boundaries improve scanability on pale surfaces. */
+.form input,.form select,.form textarea,.source-input,.module-title,.module-summary,
+.item-edit input,.item-edit select,.rc3-setup-form input,.rc3-setup-form textarea,
+.rc3-setup-form select,.rc3-inspector input,.rc3-inspector textarea,
+.rc3-inspector select,.rc6-field input,.project-chrome select{
+  border-color:#c7cdd8!important;
+}
+
+input::placeholder,textarea::placeholder{
+  color:#7b8493!important;
+  opacity:1!important;
+}
+
+/* Disabled controls should remain visibly disabled but still legible. */
+button:disabled,.actions button:disabled,.panel button:disabled{
+  opacity:1!important;
+  color:#7b8493!important;
+  background:#f2f4f7!important;
+  border-color:#e0e4ea!important;
+}
+
+/* Status surfaces: subtle tint, readable foreground. */
+.badge.good,.rc3-status.good{color:#05603a!important}
+.badge.warn{color:#93370d!important}
+.rc5-trust-bar span{color:#344054!important;background:#eef1f4!important}
+
+/* Mobile keeps the tighter composition; only contrast changes carry through. */
+@media(max-width:760px){
+  .hero{margin-bottom:0!important;border-bottom:0!important}
+  .mobile-section-nav select{color:#101828!important;background:#fff!important}
+  .section-head p{color:#475467!important}
+}
