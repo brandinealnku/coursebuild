@@ -1,0 +1,38 @@
+name: CourseBuild checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify required root assets
+        run: |
+          for file in index.html styles.css app.js independent-user.js independent-user.css projects.js projects.css versions.js versions.css version-publish.js version-reconcile.js reconciliation-resolution.js reconciliation-resolution.css sample-course.js _headers robots.txt; do
+            test -f "$file" || { echo "Missing $file"; exit 1; }
+          done
+      - name: Check browser JavaScript syntax
+        run: |
+          node --check app.js
+          node --check independent-user.js
+          node --check projects.js
+          node --check managed-storage.js
+          node --check versions.js
+          node --check version-publish.js
+          node --check version-reconcile.js
+          node --check reconciliation-resolution.js
+          node --check telemetry.js
+          node --check pilot.js
+          node --check cohort.js
+      - name: Confirm public-repo backend boundary
+        run: |
+          test ! -f apps-script-backend.gs
+          test ! -f managed-storage-backend.gs
+          ! grep -RInE 'AIza[0-9A-Za-z_-]{20,}|ghp_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+|sk-[A-Za-z0-9_-]{20,}|https://script\.google\.com/macros/s/[A-Za-z0-9_-]{20,}' --exclude-dir=.git .
