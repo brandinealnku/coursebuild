@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify required root assets
         run: |
-          for file in index.html styles.css app.js projects.js projects.css versions.js versions.css version-publish.js version-reconcile.js reconciliation-resolution.js reconciliation-resolution.css sample-course.js responsive.css product-experience-rc2.css product-experience-rc3.css product-experience-rc3.js rc3-mobile-hardening.css rc3-mobile-hardening.js cdo-experience-rc4.css cdo-experience-rc4.js rc4-visible-activation.css rc4-visible-activation.js experience-debt-rc5.css experience-debt-rc5.js unified-modern-rc6.css unified-modern-rc6.js rc6-2-contrast-nav-polish.css rc6-3-legacy-contrast-cleanup.css interaction-smoke-rc6.js _headers robots.txt; do
+          for file in index.html styles.css app.js projects.js projects.css versions.js versions.css version-publish.js version-reconcile.js reconciliation-resolution.js reconciliation-resolution.css sample-course.js responsive.css product-experience-rc2.css product-experience-rc3.css product-experience-rc3.js rc3-mobile-hardening.css rc3-mobile-hardening.js cdo-experience-rc4.css cdo-experience-rc4.js rc4-visible-activation.css rc4-visible-activation.js experience-debt-rc5.css experience-debt-rc5.js unified-modern-rc6.css unified-modern-rc6.js rc6-2-contrast-nav-polish.css rc6-3-legacy-contrast-cleanup.css interaction-smoke-rc6.js trust-state-model.js trust-state-integrity-rc6-4.js RC6_4_BACKEND_CONTRACT.md tests/trust-state-integrity.test.js _headers robots.txt; do
             test -f "$file" || { echo "Missing $file"; exit 1; }
           done
       - name: Check browser JavaScript syntax
@@ -37,6 +37,21 @@ jobs:
           node --check experience-debt-rc5.js
           node --check unified-modern-rc6.js
           node --check interaction-smoke-rc6.js
+          node --check trust-state-model.js
+          node --check trust-state-integrity-rc6-4.js
+          node --check tests/trust-state-integrity.test.js
+      - name: Run RC6.4 trust-state model tests
+        run: node tests/trust-state-integrity.test.js
+      - name: Verify RC6.4 runtime order and trust operations
+        run: |
+          grep -Fq 'trust-state-model.js?v=rc6.4' index.html
+          grep -Fq 'trust-state-integrity-rc6-4.js?v=rc6.4' index.html
+          grep -Fq "api('verifyCanvasConnection'" trust-state-integrity-rc6-4.js
+          grep -Fq "api('verifyPublishedItem'" trust-state-integrity-rc6-4.js
+          grep -Fq "state='Sent / unverified'" trust-state-integrity-rc6-4.js
+          grep -Fq "state:'Generation failed'" trust-state-integrity-rc6-4.js
+          ! grep -Fq 'Pilot sample' trust-state-integrity-rc6-4.js
+          ! grep -Fq 'localArchitecture' trust-state-integrity-rc6-4.js
       - name: Guard against mutation feedback loops
         run: |
           ! grep -n "MutationObserver(()=>normalizeLanguage())" unified-modern-rc6.js
