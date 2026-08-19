@@ -11,7 +11,6 @@
   const legacySave=save;
   const legacyRenderPlan=renderPlan;
   const legacyRenderReview=renderReview;
-  const legacyPatchItem=patchItem;
   const legacyApplyArchitecture=applyArchitecture;
 
   function syncLegacyStatus(item){
@@ -204,18 +203,24 @@
     setTimeout(correctLegacyTrustChrome,0);
   };
 
+  let observer;
   function correctLegacyTrustChrome(){
-    const verified=canvasVerified();const v=canvasVerification();
-    qa('.rc5-trust-bar span').forEach(s=>{if(/^Canvas /i.test(s.textContent||''))s.textContent=verified?'Canvas verified':v.state;});
-    const canvasLi=q('.rc5-home-status li:last-child');if(canvasLi){canvasLi.classList.toggle('done',verified);const i=q('i',canvasLi);if(i)i.textContent=verified?'✓':'•';}
-    const items=data.items||[],reviewed=items.filter(i=>M.generationApproved(i)).length;const setupKeys=['code','title','institution','credits','defaultDeliveryMode','audience','description','outcomes','policies'];const setup=setupKeys.filter(k=>Array.isArray(data.profile?.[k])?data.profile[k].length:String(data.profile?.[k]??'').trim()).length===setupKeys.length;const milestones=[setup,data.architecture?.status==='Approved',items.length>0&&reviewed===items.length,verified];const progress=Math.round(milestones.filter(Boolean).length/milestones.length*100);
-    const cmd=q('.cdo-command');if(cmd){const strong=q('.cdo-command-progress strong',cmd),bar=q('.cdo-command-progress i b',cmd);if(strong)strong.textContent=`${progress}%`;if(bar)bar.style.width=`${progress}%`;if(setup&&data.architecture?.status==='Approved'&&items.length&&reviewed===items.length&&!verified){const n=q('.cdo-command-next',cmd),b=q('.cdo-command-action',cmd);if(n){q('strong',n).textContent='Verify Canvas connection';q('small',n).textContent=v.state;}if(b){b.dataset.cdoJump='settings';b.textContent='Go to Settings →';}}}
-    const trust=q('.cdo-trust-panel');if(trust)trust.classList.toggle('ready',verified&&data.architecture?.status==='Approved'&&items.length&&reviewed===items.length);
-    if(setup&&data.architecture?.status==='Approved'&&items.length&&reviewed===items.length&&!verified){const next=q('.rc5-next');if(next){q('strong',next).textContent='Canvas connection';q('p',next).textContent=`${v.state}. Verify the destination before preflight.`;const b=q('button',next);if(b){b.dataset.rc5Next='settings';b.onclick=()=>q('.steps button[data-view="settings"]')?.click();}}}
+    observer?.disconnect();
+    try{
+      const verified=canvasVerified();const v=canvasVerification();
+      qa('.rc5-trust-bar span').forEach(s=>{if(/^Canvas /i.test(s.textContent||'')){const text=verified?'Canvas verified':v.state;if(s.textContent!==text)s.textContent=text;}});
+      const canvasLi=q('.rc5-home-status li:last-child');if(canvasLi){canvasLi.classList.toggle('done',verified);const i=q('i',canvasLi);const mark=verified?'✓':'•';if(i&&i.textContent!==mark)i.textContent=mark;}
+      const items=data.items||[],reviewed=items.filter(i=>M.generationApproved(i)).length;const setupKeys=['code','title','institution','credits','defaultDeliveryMode','audience','description','outcomes','policies'];const setup=setupKeys.filter(k=>Array.isArray(data.profile?.[k])?data.profile[k].length:String(data.profile?.[k]??'').trim()).length===setupKeys.length;const milestones=[setup,data.architecture?.status==='Approved',items.length>0&&reviewed===items.length,verified];const progress=Math.round(milestones.filter(Boolean).length/milestones.length*100);
+      const cmd=q('.cdo-command');if(cmd){const strong=q('.cdo-command-progress strong',cmd),bar=q('.cdo-command-progress i b',cmd);const pct=`${progress}%`;if(strong&&strong.textContent!==pct)strong.textContent=pct;if(bar&&bar.style.width!==pct)bar.style.width=pct;if(setup&&data.architecture?.status==='Approved'&&items.length&&reviewed===items.length&&!verified){const n=q('.cdo-command-next',cmd),b=q('.cdo-command-action',cmd);if(n){const ns=q('strong',n),small=q('small',n);if(ns&&ns.textContent!=='Verify Canvas connection')ns.textContent='Verify Canvas connection';if(small&&small.textContent!==v.state)small.textContent=v.state;}if(b){b.dataset.cdoJump='settings';if(b.textContent!=='Go to Settings →')b.textContent='Go to Settings →';}}}
+      const trust=q('.cdo-trust-panel');if(trust)trust.classList.toggle('ready',verified&&data.architecture?.status==='Approved'&&items.length&&reviewed===items.length);
+      if(setup&&data.architecture?.status==='Approved'&&items.length&&reviewed===items.length&&!verified){const next=q('.rc5-next');if(next){const ns=q('strong',next),p=q('p',next),b=q('button',next),detail=`${v.state}. Verify the destination before preflight.`;if(ns&&ns.textContent!=='Canvas connection')ns.textContent='Canvas connection';if(p&&p.textContent!==detail)p.textContent=detail;if(b){b.dataset.rc5Next='settings';b.onclick=()=>q('.steps button[data-view="settings"]')?.click();}}}
+    }finally{
+      if(document.body)observer?.observe(document.body,{subtree:true,childList:true});
+    }
   }
 
-  const observer=new MutationObserver(()=>{clearTimeout(observer._t);observer._t=setTimeout(correctLegacyTrustChrome,60);});
-  window.addEventListener('load',()=>{normalizeTrustState();save();saveSettings();renderAll();correctLegacyTrustChrome();observer.observe(document.body,{subtree:true,childList:true});});
+  observer=new MutationObserver(()=>{clearTimeout(observer._t);observer._t=setTimeout(correctLegacyTrustChrome,60);});
+  window.addEventListener('load',()=>{normalizeTrustState();save();saveSettings();renderAll();correctLegacyTrustChrome();});
   document.addEventListener('click',()=>setTimeout(correctLegacyTrustChrome,120),true);
   window.CourseBuildTrustState={normalizeTrustState,canvasVerification,canvasVerified,publishOne,verifyPublishedItem,correctLegacyTrustChrome};
 })();
