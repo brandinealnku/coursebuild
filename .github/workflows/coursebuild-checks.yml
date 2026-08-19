@@ -44,13 +44,14 @@ jobs:
         run: node tests/trust-state-integrity.test.js
       - name: Verify RC6.4 runtime order and trust operations
         run: |
-          grep -q 'trust-state-model.js?v=rc6.4.*trust-state-integrity-rc6-4.js?v=rc6.4' index.html
-          grep -q "api('verifyCanvasConnection'" trust-state-integrity-rc6-4.js
-          grep -q "api('verifyPublishedItem'" trust-state-integrity-rc6-4.js
-          grep -q "state='Sent / unverified'" trust-state-integrity-rc6-4.js
-          grep -q "state='Generation failed'" trust-state-integrity-rc6-4.js
-          ! grep -q 'Pilot sample' trust-state-integrity-rc6-4.js
-          ! grep -q 'localArchitecture' trust-state-integrity-rc6-4.js
+          grep -Fq 'trust-state-model.js?v=rc6.4' index.html
+          grep -Fq 'trust-state-integrity-rc6-4.js?v=rc6.4' index.html
+          grep -Fq "api('verifyCanvasConnection'" trust-state-integrity-rc6-4.js
+          grep -Fq "api('verifyPublishedItem'" trust-state-integrity-rc6-4.js
+          grep -Fq "state='Sent / unverified'" trust-state-integrity-rc6-4.js
+          grep -Fq "state:'Generation failed'" trust-state-integrity-rc6-4.js
+          ! grep -Fq 'Pilot sample' trust-state-integrity-rc6-4.js
+          ! grep -Fq 'localArchitecture' trust-state-integrity-rc6-4.js
       - name: Guard against mutation feedback loops
         run: |
           ! grep -n "MutationObserver(()=>normalizeLanguage())" unified-modern-rc6.js
