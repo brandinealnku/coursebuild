@@ -40,7 +40,12 @@
   function homeExperience(){
     const host=q('#projects'),s=state();if(!host||!s)return;
     q('.rc5-home',host)?.remove();
-    const old=q('.rc4-home-command',host);if(old)old.hidden=true;
+    const commandCenter=q('.rc4-home-command',host);
+    if(commandCenter){
+      commandCenter.hidden=false;
+      simplifyCourseCards(host);
+      return;
+    }
     const head=q('.section-head',host);if(!head)return;
     const attentionCount=s.attention.length;
     head.insertAdjacentHTML('afterend',`<section class="rc5-home" aria-label="Current course workspace">
