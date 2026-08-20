@@ -12,13 +12,17 @@
     const items=data.items||[];
     const reviewed=items.filter(i=>i.status==='Approved').length;
     const blueprint=Boolean(data.architecture?.status==='Approved');
-    const canvas=typeof settings!=='undefined'&&Boolean(settings?.canvasCourseId&&settings?.canvasBaseUrl&&settings?.appsScriptUrl);
+    const canvas=typeof settings!=='undefined'&&(
+      window.CourseBuildTrustModel?.isCanvasVerified
+        ? window.CourseBuildTrustModel.isCanvasVerified(settings)
+        : Boolean(settings?.canvasVerification?.state==='Connected and verified')
+    );
     const stages=[setup===100,blueprint,items.length>0&&reviewed===items.length,canvas];
     const progress=Math.round((stages.filter(Boolean).length/stages.length)*100);
     let next={view:'profile',label:'Finish course setup',detail:`${filled} of ${setupKeys.length} setup areas complete`};
     if(setup===100&&!blueprint)next={view:'plan',label:'Shape and approve the Blueprint',detail:`${data.modules?.length||0} modules · ${items.length} course items`};
     else if(blueprint&&reviewed<items.length)next={view:'review',label:'Review course content',detail:`${reviewed} of ${items.length} course items approved`};
-    else if(blueprint&&items.length&&reviewed===items.length&&!canvas)next={view:'settings',label:'Connect Canvas',detail:'Add the connection details required to publish'};
+    else if(blueprint&&items.length&&reviewed===items.length&&!canvas)next={view:'settings',label:'Connect and verify Canvas',detail:'Verify the Canvas destination before publishing'};
     else if(blueprint&&items.length&&reviewed===items.length&&canvas)next={view:'build',label:'Run Canvas preflight',detail:'Confirm exactly what is ready before publishing'};
     return {p,setup,items,reviewed,blueprint,canvas,progress,next};
   }
@@ -42,7 +46,7 @@
     const active=s.next.view;
     head.insertAdjacentHTML('afterend',`<section class="rc4-home-command" aria-label="CourseBuild command center">
       <div class="rc4-home-main">
-        <div class="rc4-home-kicker"><span>CourseBuild RC4</span><em>Build once. Adapt everywhere.</em></div>
+        <div class="rc4-home-kicker"><span>CourseBuild</span><em>Build once. Adapt everywhere.</em></div>
         <h3>${esc(s.p.code||'Your course')} ${s.p.title?`· ${esc(s.p.title)}`:''}</h3>
         <p>See the course taking shape, know what needs attention, and move forward without hunting through the product.</p>
         <div class="rc4-home-progress"><div><strong>${s.progress}%</strong><span>course ready</span></div><i><b style="width:${s.progress}%"></b></i></div>
@@ -65,8 +69,8 @@
 
   function markBuild(){
     const tag=q('.topbar .tag');
-    if(tag){tag.textContent='RC4 · Build once. Adapt everywhere.';tag.removeAttribute('aria-hidden');}
-    document.documentElement.dataset.coursebuildBuild='rc4-visible';
+    if(tag){tag.textContent='CourseBuild · Build once. Adapt everywhere.';tag.removeAttribute('aria-hidden');}
+    document.documentElement.dataset.coursebuildBuild='home-command-center';
   }
 
   function render(){
