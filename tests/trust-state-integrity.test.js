@@ -18,7 +18,8 @@ function item(status='Planned'){return{id:'i1',type:'Page',title:'Test page',cou
   const i=item('Sent');M.normalizeItem(i);assert.equal(i.generation.state,'Approved');assert.equal(i.publish.state,'Sent / unverified');assert.notEqual(i.publish.state,'Verified');
 }
 {
-  const s={appsScriptUrl:'https://example.invalid',canvasBaseUrl:'https://canvas.example.edu',canvasCourseId:'42'};
+  const s={canvasBaseUrl:'https://canvas.example.edu',canvasCourseId:'42'};
+  assert.equal(M.canvasConfigPresent(s),true);
   assert.equal(M.normalizedCanvasVerification(s).state,'Configured, unverified');
   assert.equal(M.isCanvasVerified(s),false);
   s.canvasVerification={state:'Connected and verified',courseId:'42',courseName:'Course',verifiedAt:'2026-08-18T00:00:00Z'};
@@ -27,7 +28,7 @@ function item(status='Planned'){return{id:'i1',type:'Page',title:'Test page',cou
   assert.equal(M.normalizedCanvasVerification(s).state,'Configured, unverified');
 }
 {
-  const s={};assert.equal(M.normalizedCanvasVerification(s).state,'Not configured');
+  const s={canvasBaseUrl:'https://canvas.example.edu'};assert.equal(M.normalizedCanvasVerification(s).state,'Not configured');
 }
 {
   const i=item('Sent');M.normalizeItem(i);i.publish.canvasId='123';
