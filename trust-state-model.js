@@ -37,7 +37,7 @@
     item.publish.updatedAt ||= '';
     return item;
   }
-  function canvasConfigPresent(settings){return Boolean(settings?.appsScriptUrl&&settings?.canvasBaseUrl&&settings?.canvasCourseId);}
+  function canvasConfigPresent(settings){return Boolean(settings?.canvasBaseUrl&&settings?.canvasCourseId);}
   function normalizedCanvasVerification(settings){
     const configured=canvasConfigPresent(settings);
     const current=settings?.canvasVerification||{};
