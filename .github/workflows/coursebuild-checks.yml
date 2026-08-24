@@ -76,7 +76,7 @@ jobs:
           grep -Fq 'provenancePolicy' source-intelligence.js
           grep -Fq 'course-readiness.js?v=ready1' index.html
           grep -Fq 'Not checked' course-readiness.js
-          ! grep -Fq 'appsScriptUrl' coursebuild-service-client.js
+          ! grep -Fq 'Apps Script Web App URL' coursebuild-service-client.js
       - name: Verify pilot source and command center boundaries
         run: |
           grep -Fq 'pdf.min.js' index.html
