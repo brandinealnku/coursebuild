@@ -29,7 +29,7 @@
 
     const resources=[];
     const health=window.CourseBuildCourseIntelligence?.analyze?.();
-    if(health)resources.push((health.blockers||[]).length?warn('Course integrity',`${health.blockers.length} structural blocker${health.blockers.length===1?'':'s'} detected.','health'):pass('Course integrity','No current structural blockers detected by local preflight.','health'));
+    if(health)resources.push((health.blockers||[]).length?warn('Course integrity',`${health.blockers.length} structural blocker${health.blockers.length===1?'':'s'} detected.`,'health'):pass('Course integrity','No current structural blockers detected by local preflight.','health'));
     else resources.push(unchecked('Course integrity','Course Health analysis is not available.'));
     resources.push(unchecked('Live link validation','CourseBuild has not yet performed network validation of external resources.'));
     resources.push(unchecked('Accessibility QA','Accessibility checks are not yet implemented as an evidence-backed readiness dimension.'));
@@ -39,6 +39,8 @@
     canvas.push(v.state==='Connected and verified'?pass('Canvas destination',`Verified: ${v.courseName||v.courseId}.`,'settings'):warn('Canvas destination',v.state==='Connection failed'?'Canvas connection verification failed.':'Canvas destination has not been verified.','settings'));
     const overview=data.canvasOverview;
     canvas.push(overview?.updatedAt?pass('Canvas inventory',`Live Canvas inventory last read ${new Date(overview.updatedAt).toLocaleString()}.`,'projects'):unchecked('Canvas inventory','No successful live Canvas inventory read is recorded.'));
+    const fileItems=items.filter(i=>i.type==='File');
+    if(fileItems.length)canvas.push(warn('File publishing',`${fileItems.length} File item${fileItems.length===1?' requires':'s require'} an actual binary asset before CourseBuild can publish and verify it.`,'plan'));
     const published=items.filter(i=>M()?.publishVerified?.(i)).length;
     canvas.push(items.length&&published===items.length?pass('Publishing verification',`${published}/${items.length} items are read-back verified in Canvas.`,'build'):warn('Publishing verification',`${published}/${items.length} course items are read-back verified in Canvas.`,'build'));
 
