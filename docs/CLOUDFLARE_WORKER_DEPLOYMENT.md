@@ -57,6 +57,10 @@ Then verify:
 3. `https://coursebuild.itsbadlabs.com/apps/coursebuild-classic/` still serves CourseBuild Classic.
 4. The Course Ops Inspector can verify and inspect an approved Canvas course without exposing the token to the browser.
 
+## Build-trigger note
+
+After changing the Cloudflare Workers Builds deploy command, push a fresh commit to `main` so the new build configuration is exercised. A documentation-only commit is sufficient and does not change application behavior.
+
 ## Release boundary
 
 Course Ops remains read-only. This deployment patch only changes how the existing Canvas secret reaches the Worker runtime. It does not add Canvas mutations, bulk editing, or mutation verification. A successful Cloudflare deployment is deployment evidence, not proof that Canvas inspection works end to end; the smoke tests above are still required.
