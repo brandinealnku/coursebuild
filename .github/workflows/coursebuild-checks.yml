@@ -22,22 +22,40 @@ jobs:
           test -f apps/course-ops/index.html
           test -f apps/course-ops/styles.css
           test -f apps/course-ops/app.js
+          test -f functions/api/course-ops.js
           test -f docs/COURSEBUILD_CLASSIC.md
           test -f docs/COURSE_OPS_PRODUCT_CONTEXT.md
           test -f docs/PRODUCT_DECISIONS.md
           test -f packages/README.md
-      - name: Check Course Ops shell syntax and truth boundary
+      - name: Check Course Ops inspector syntax and read-only boundary
         run: |
           node --check apps/course-ops/app.js
-          grep -Fq 'Inspect' apps/course-ops/index.html
-          grep -Fq 'Select' apps/course-ops/index.html
-          grep -Fq 'Change' apps/course-ops/index.html
-          grep -Fq 'Review' apps/course-ops/index.html
-          grep -Fq 'Apply' apps/course-ops/index.html
-          grep -Fq 'Verify' apps/course-ops/index.html
-          grep -Fq 'No Canvas mutation' apps/course-ops/index.html
+          node --input-type=module --check < functions/api/course-ops.js
+          grep -Fq 'Canvas Inspector' apps/course-ops/index.html
+          grep -Fq 'Read-only build' apps/course-ops/index.html
+          grep -Fq 'It cannot change Canvas content yet.' apps/course-ops/index.html
+          grep -Fq "const API='/api/course-ops'" apps/course-ops/app.js
+          grep -Fq 'canvasRead:true' apps/course-ops/app.js
           grep -Fq 'canvasWrite:false' apps/course-ops/app.js
           grep -Fq 'bulkEdit:false' apps/course-ops/app.js
+          grep -Fq "action==='verifyCourse'" functions/api/course-ops.js
+          grep -Fq "action==='inspectCourse'" functions/api/course-ops.js
+          grep -Fq 'COURSE_OPS_ALLOWED_CANVAS_HOSTS' functions/api/course-ops.js
+          grep -Fq 'This Canvas host is not approved for Course Ops.' functions/api/course-ops.js
+          grep -Fq 'readOnly:true' functions/api/course-ops.js
+          ! grep -Eq "method:['\"](PUT|PATCH|DELETE)['\"]" functions/api/course-ops.js
+      - name: Verify inspector object coverage
+        run: |
+          for type in Module Page Assignment Discussion Quiz File Announcement; do
+            grep -Fq "$type" apps/course-ops/index.html apps/course-ops/app.js functions/api/course-ops.js || { echo "Missing $type inspector coverage"; exit 1; }
+          done
+          grep -Fq '/modules?per_page=100' functions/api/course-ops.js
+          grep -Fq '/pages?per_page=100' functions/api/course-ops.js
+          grep -Fq '/assignments?per_page=100' functions/api/course-ops.js
+          grep -Fq '/discussion_topics?per_page=100' functions/api/course-ops.js
+          grep -Fq '/quizzes?per_page=100' functions/api/course-ops.js
+          grep -Fq '/files?per_page=100' functions/api/course-ops.js
+          grep -Fq '/announcements?' functions/api/course-ops.js
       - name: Verify Classic remains runnable source
         run: |
           node --check apps/coursebuild-classic/app.js

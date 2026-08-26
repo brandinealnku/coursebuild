@@ -1,4 +1,62 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f7f8fa"><title>Course Ops · ITSBAD Labs</title><link rel="stylesheet" href="styles.css"></head>
-<body><header class="topbar"><div><p class="eyebrow">ITSBAD Labs</p><h1>Course Ops</h1></div><span class="status">Product shell</span></header><main><section class="hero"><p class="eyebrow">Canvas course operations</p><h2>Manage Canvas without fighting Canvas.</h2><p>Course Ops is being built as the fast control layer for understanding existing Canvas shells, editing content, making bulk changes, and verifying what actually changed.</p></section><section class="workspace" aria-label="Planned core workflow"><article><span>1</span><h3>Inspect</h3><p>Read the real Canvas shell and make course state understandable.</p></article><article><span>2</span><h3>Select</h3><p>Choose items across modules, object types, or courses.</p></article><article><span>3</span><h3>Change</h3><p>Make direct edits or define a safe bulk operation.</p></article><article><span>4</span><h3>Review</h3><p>Preview the exact change set before writing to Canvas.</p></article><article><span>5</span><h3>Apply</h3><p>Execute supported operations with explicit progress and failure handling.</p></article><article><span>6</span><h3>Verify</h3><p>Read Canvas back before reporting success.</p></article></section><section class="boundary"><h3>This PR establishes the boundary only.</h3><p>No Canvas mutation, bulk-edit, inspection, or authentication capability is represented as implemented yet. Those capabilities belong in focused follow-up patches with acceptance tests.</p></section></main><script src="app.js"></script></body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fa">
+  <meta name="description" content="Course Ops gives instructors one searchable view of an existing Canvas course shell.">
+  <title>Course Ops · ITSBAD Labs</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><p class="eyebrow">ITSBAD Labs</p><h1>Course Ops</h1></div>
+    <div class="top-actions"><span id="serviceStatus" class="status">Checking service…</span><a class="classic-link" href="../coursebuild-classic/">CourseBuild Classic</a></div>
+  </header>
+  <main>
+    <section class="hero">
+      <div><p class="eyebrow">Canvas course operations</p><h2>See the whole shell.</h2><p>Connect one Canvas course and inspect its modules, pages, assignments, discussions, quizzes, files, and announcements from a single searchable workspace.</p></div>
+      <aside class="read-only-note"><strong>Read-only build</strong><span>This version can inspect Canvas. It cannot change Canvas content yet.</span></aside>
+    </section>
+
+    <section class="connect panel" aria-labelledby="connectTitle">
+      <div class="section-head"><div><p class="eyebrow">Step 1</p><h3 id="connectTitle">Choose the Canvas course to inspect</h3><p>Your Canvas token stays on the Course Ops service. This browser stores only the Canvas URL and course ID.</p></div><span id="connectionBadge" class="badge neutral">Not verified</span></div>
+      <form id="courseForm" class="course-form">
+        <label>Canvas URL<input id="canvasBaseUrl" name="canvasBaseUrl" type="url" placeholder="https://yourinstitution.instructure.com" autocomplete="url" required></label>
+        <label>Course ID<input id="canvasCourseId" name="canvasCourseId" inputmode="numeric" placeholder="12345" required></label>
+        <button id="inspectButton" class="primary" type="submit">Verify & inspect course</button>
+      </form>
+      <div id="connectionMessage" class="message" role="status" aria-live="polite"></div>
+    </section>
+
+    <section id="inspector" class="inspector hidden" aria-labelledby="courseTitle">
+      <div class="course-heading">
+        <div><p class="eyebrow">Canvas Inspector</p><h2 id="courseTitle">Course</h2><p id="courseMeta"></p></div>
+        <div class="course-actions"><span id="freshness" class="freshness"></span><button id="refreshButton" type="button">Refresh Canvas</button><a id="openCanvas" class="button-link" href="#" target="_blank" rel="noopener">Open in Canvas</a></div>
+      </div>
+
+      <section id="summaryCards" class="summary-grid" aria-label="Canvas inventory summary"></section>
+
+      <section class="panel table-panel">
+        <div class="toolbar">
+          <label class="search-label"><span>Search this course</span><input id="searchInput" type="search" placeholder="Search titles, modules, and types…"></label>
+          <label><span>Type</span><select id="typeFilter"><option value="">All types</option></select></label>
+          <label><span>Status</span><select id="statusFilter"><option value="">All statuses</option><option value="published">Published</option><option value="unpublished">Unpublished</option><option value="unknown">Status unavailable</option></select></label>
+          <label><span>Module</span><select id="moduleFilter"><option value="">All modules</option></select></label>
+        </div>
+        <div class="result-line"><strong id="resultCount">0 items</strong><button id="clearFilters" class="text-button" type="button">Clear filters</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Type</th><th>Title</th><th>Module</th><th>Status</th><th>Due</th><th>Points</th><th>Canvas</th></tr></thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+          <div id="emptyState" class="empty hidden"><strong>No matching Canvas items</strong><p>Try clearing one or more filters.</p></div>
+        </div>
+      </section>
+
+      <section class="next panel"><div><p class="eyebrow">Next product layer</p><h3>Inspect is real. Change is next.</h3><p>The next build can add multi-select and a reviewable change set for safe bulk operations. Nothing in this build writes to Canvas.</p></div><div class="workflow" aria-label="Course Ops workflow"><span class="active">Inspect</span><span>Select</span><span>Change</span><span>Review</span><span>Apply</span><span>Verify</span></div></section>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
