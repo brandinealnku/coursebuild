@@ -32,9 +32,7 @@ function canvasConfig(payload,env){
   return{base,courseId,token,host};
 }
 function canvasHeaders(token){return{Authorization:`Bearer ${token}`,Accept:'application/json'};}
-function endpointLabel(url){
-  try{return new URL(url).pathname;}catch{return String(url||'Canvas API');}
-}
+function endpointLabel(url){try{return new URL(url).pathname;}catch{return String(url||'Canvas API');}}
 function canvasMessage(body){return String(body?.errors?.[0]?.message||body?.message||body?.error||'').trim();}
 async function requestJson(url,init={}){
   const response=await fetch(url,init);const text=await response.text();let body={};
@@ -42,7 +40,7 @@ async function requestJson(url,init={}){
   if(!response.ok){
     const endpoint=endpointLabel(url),remote=canvasMessage(body);
     if(response.status===401)throw new CanvasRequestError('Canvas rejected the configured access token. Generate or replace the Canvas access token and try again.',{status:401,code:'CANVAS_TOKEN_REJECTED',endpoint,canvasMessage:remote});
-    if(response.status===403)throw new CanvasRequestError('Canvas accepted the request but denied access. Confirm that the Canvas account that created this token can open this course and that NKU permits this API action.',{status:403,code:'CANVAS_ACCESS_DENIED',endpoint,canvasMessage:remote});
+    if(response.status===403)throw new CanvasRequestError('Canvas denied access to this API request. Confirm that the Canvas account that created this token can open this course and that NKU permits this API action.',{status:403,code:'CANVAS_ACCESS_DENIED',endpoint,canvasMessage:remote});
     if(response.status===404)throw new CanvasRequestError('Canvas could not find the requested course or API resource. Confirm the numeric Canvas course ID and your access to that course.',{status:404,code:'CANVAS_RESOURCE_NOT_FOUND',endpoint,canvasMessage:remote});
     throw new CanvasRequestError(remote||`Canvas request failed (${response.status}).`,{status:response.status,code:'CANVAS_REQUEST_FAILED',endpoint,canvasMessage:remote});
   }
