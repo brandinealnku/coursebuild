@@ -72,7 +72,13 @@ jobs:
           grep -Fq "action==='verifyCourse'" functions/api/course-ops.js
           grep -Fq "action==='inspectCourse'" functions/api/course-ops.js
           grep -Fq 'COURSE_OPS_ALLOWED_CANVAS_HOSTS' functions/api/course-ops.js
+          grep -Fq '/api/v1/users/self/profile' functions/api/course-ops.js
+          grep -Fq 'CANVAS_TOKEN_REJECTED' functions/api/course-ops.js
+          grep -Fq 'CANVAS_ACCESS_DENIED' functions/api/course-ops.js
+          grep -Fq 'CANVAS_RESOURCE_NOT_FOUND' functions/api/course-ops.js
+          grep -Fq 'Canvas denied access to this API request.' functions/api/course-ops.js
           grep -Fq 'This Canvas host is not approved for Course Ops.' functions/api/course-ops.js
+          grep -Fq "version:'canvas-inspector-2'" functions/api/course-ops.js
           grep -Fq 'readOnly:true' functions/api/course-ops.js
           ! grep -Eq "method:['\"](PUT|PATCH|DELETE)['\"]" functions/api/course-ops.js
       - name: Verify inspector object coverage
