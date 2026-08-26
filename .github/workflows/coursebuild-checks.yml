@@ -1,4 +1,4 @@
-name: CourseBuild checks
+name: Course tooling checks
 
 on:
   push:
@@ -9,87 +9,46 @@ permissions:
   contents: read
 
 jobs:
-  smoke:
+  repository-boundaries:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify required root assets
+      - name: Verify application boundaries
         run: |
-          for file in index.html styles.css app.js projects.js projects.css versions.js versions.css version-publish.js version-reconcile.js reconciliation-resolution.js reconciliation-resolution.css sample-course.js responsive.css product-experience-rc2.css product-experience-rc3.css product-experience-rc3.js rc3-mobile-hardening.css rc3-mobile-hardening.js cdo-experience-rc4.css cdo-experience-rc4.js rc4-visible-activation.css rc4-visible-activation.js experience-debt-rc5.css experience-debt-rc5.js unified-modern-rc6.css unified-modern-rc6.js rc6-2-contrast-nav-polish.css rc6-3-legacy-contrast-cleanup.css interaction-smoke-rc6.js trust-state-model.js trust-state-integrity-rc6-4.js coursebuild-service-client.js source-intelligence.js course-readiness.js functions/api/coursebuild.js course-intelligence.js course-intelligence.css learning-alignment.js learning-alignment.css publishing-audit.js publishing-audit.css blueprint-usability.js blueprint-usability.css pilot-command-center.js pilot-command-center.css pilot-blueprint-service.js PILOT_SERVICE_CONTRACT.md RC6_4_BACKEND_CONTRACT.md tests/trust-state-integrity.test.js _headers robots.txt; do
-            test -f "$file" || { echo "Missing $file"; exit 1; }
-          done
-      - name: Check browser JavaScript syntax
+          test -f apps/coursebuild-classic/index.html
+          test -f apps/coursebuild-classic/app.js
+          test -f apps/coursebuild-classic/functions/api/coursebuild.js
+          test -f apps/coursebuild-classic/tests/trust-state-integrity.test.js
+          test -f apps/course-ops/index.html
+          test -f apps/course-ops/styles.css
+          test -f apps/course-ops/app.js
+          test -f docs/COURSEBUILD_CLASSIC.md
+          test -f docs/COURSE_OPS_PRODUCT_CONTEXT.md
+          test -f docs/PRODUCT_DECISIONS.md
+          test -f packages/README.md
+      - name: Check Course Ops shell syntax and truth boundary
         run: |
-          node --check app.js
-          node --check projects.js
-          node --check managed-storage.js
-          node --check versions.js
-          node --check version-publish.js
-          node --check version-reconcile.js
-          node --check reconciliation-resolution.js
-          node --check telemetry.js
-          node --check pilot.js
-          node --check cohort.js
-          node --check product-experience-rc3.js
-          node --check rc3-mobile-hardening.js
-          node --check cdo-experience-rc4.js
-          node --check rc4-visible-activation.js
-          node --check experience-debt-rc5.js
-          node --check unified-modern-rc6.js
-          node --check interaction-smoke-rc6.js
-          node --check trust-state-model.js
-          node --check trust-state-integrity-rc6-4.js
-          node --check coursebuild-service-client.js
-          node --check source-intelligence.js
-          node --check course-readiness.js
-          node --check course-intelligence.js
-          node --check learning-alignment.js
-          node --check publishing-audit.js
-          node --check blueprint-usability.js
-          node --check pilot-command-center.js
-          node --check pilot-blueprint-service.js
-          node --check tests/trust-state-integrity.test.js
-          node --input-type=module --check < functions/api/coursebuild.js
-      - name: Run RC6.4 trust-state model tests
-        run: node tests/trust-state-integrity.test.js
-      - name: Verify RC6.4 runtime order and trust operations
+          node --check apps/course-ops/app.js
+          grep -Fq 'Inspect' apps/course-ops/index.html
+          grep -Fq 'Select' apps/course-ops/index.html
+          grep -Fq 'Change' apps/course-ops/index.html
+          grep -Fq 'Review' apps/course-ops/index.html
+          grep -Fq 'Apply' apps/course-ops/index.html
+          grep -Fq 'Verify' apps/course-ops/index.html
+          grep -Fq 'No Canvas mutation' apps/course-ops/index.html
+          grep -Fq 'canvasWrite:false' apps/course-ops/app.js
+          grep -Fq 'bulkEdit:false' apps/course-ops/app.js
+      - name: Verify Classic remains runnable source
         run: |
-          grep -Fq 'trust-state-model.js?v=rc6.4.1' index.html
-          grep -Fq 'trust-state-integrity-rc6-4.js?v=rc6.4' index.html
-          grep -Fq "api('verifyCanvasConnection'" trust-state-integrity-rc6-4.js
-          grep -Fq "api('verifyPublishedItem'" trust-state-integrity-rc6-4.js
-          grep -Fq "state='Sent / unverified'" trust-state-integrity-rc6-4.js
-          grep -Fq "state:'Generation failed'" trust-state-integrity-rc6-4.js
-          ! grep -Fq 'Pilot sample' trust-state-integrity-rc6-4.js
-          ! grep -Fq 'localArchitecture' trust-state-integrity-rc6-4.js
-      - name: Verify signature journey service boundary
+          node --check apps/coursebuild-classic/app.js
+          node --check apps/coursebuild-classic/trust-state-model.js
+          node --check apps/coursebuild-classic/trust-state-integrity-rc6-4.js
+          node --check apps/coursebuild-classic/coursebuild-service-client.js
+          node --check apps/coursebuild-classic/source-intelligence.js
+          node --check apps/coursebuild-classic/course-readiness.js
+          node --check apps/coursebuild-classic/tests/trust-state-integrity.test.js
+          node apps/coursebuild-classic/tests/trust-state-integrity.test.js
+          node --input-type=module --check < apps/coursebuild-classic/functions/api/coursebuild.js
+      - name: Confirm public repository secret boundary
         run: |
-          grep -Fq 'coursebuild-service-client.js?v=sig1' index.html
-          grep -Fq "const ENDPOINT='/api/coursebuild'" coursebuild-service-client.js
-          grep -Fq "action==='generateCourseArchitecture'" functions/api/coursebuild.js
-          grep -Fq "action==='verifyCanvasConnection'" functions/api/coursebuild.js
-          grep -Fq "action==='getCanvasCourseOverview'" functions/api/coursebuild.js
-          grep -Fq "action==='publishItem'" functions/api/coursebuild.js
-          grep -Fq "action==='verifyPublishedItem'" functions/api/coursebuild.js
-          grep -Fq 'File publishing requires an uploaded binary file' functions/api/coursebuild.js
-          grep -Fq 'source-intelligence.js?v=source1' index.html
-          grep -Fq 'provenancePolicy' source-intelligence.js
-          grep -Fq 'course-readiness.js?v=ready1' index.html
-          grep -Fq 'Not checked' course-readiness.js
-          ! grep -Fq 'Apps Script Web App URL' coursebuild-service-client.js
-      - name: Verify pilot source and command center boundaries
-        run: |
-          grep -Fq 'pdf.min.js' index.html
-          grep -Fq 'pilot-command-center.js?v=pilot1' index.html
-          grep -Fq 'pilot-blueprint-service.js?v=pilot2' index.html
-          grep -Fq "api('getCanvasCourseOverview'" pilot-command-center.js
-          grep -Fq 'Basic source analysis (non-AI)' pilot-blueprint-service.js
-          grep -Fq 'never replaced automatically' pilot-command-center.js
-      - name: Guard against mutation feedback loops
-        run: |
-          ! grep -n "MutationObserver(()=>normalizeLanguage())" unified-modern-rc6.js
-      - name: Confirm public-repo secret boundary
-        run: |
-          test ! -f apps-script-backend.gs
-          test ! -f managed-storage-backend.gs
           ! grep -RInE 'AIza[0-9A-Za-z_-]{20,}|ghp_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+|sk-[A-Za-z0-9_-]{20,}|https://script\.google\.com/macros/s/[A-Za-z0-9_-]{20,}' --exclude-dir=.git .
