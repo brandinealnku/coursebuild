@@ -1,0 +1,10 @@
+{
+  "name": "coursebuild",
+  "private": true,
+  "scripts": {
+    "deploy:cloudflare": "node scripts/deploy-cloudflare.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.126.0"
+  }
+}
