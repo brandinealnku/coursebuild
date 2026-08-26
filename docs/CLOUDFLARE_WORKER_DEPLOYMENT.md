@@ -1,6 +1,6 @@
 # Course Ops Cloudflare Worker deployment
 
-Course Ops is deployed as one Cloudflare Worker with static assets plus server-side API routes.
+Course Ops is deployed as one Cloudflare Worker with server-side API routes plus static application assets.
 
 ## Cloudflare build settings
 
@@ -10,7 +10,17 @@ Course Ops is deployed as one Cloudflare Worker with static assets plus server-s
 - Build command: `exit 0`
 - Deploy command: `npx wrangler deploy`
 
-`wrangler.jsonc` defines `worker.js` as the Worker entrypoint, serves repository static assets through the `ASSETS` binding, and invokes the Worker first for `/api/*`.
+`wrangler.jsonc` defines `worker.js` as the Worker entrypoint. Static browser assets come only from the committed `apps/` directory through the `ASSETS` binding. The repository root is intentionally **not** used as the asset directory because Wrangler rejects a configuration where the Worker entrypoint is contained inside the static asset tree.
+
+The Worker preserves the public routes:
+
+- `/` redirects to `/apps/course-ops/`
+- `/apps/course-ops/*` maps internally to the `course-ops/` asset tree
+- `/apps/coursebuild-classic/*` maps internally to the `coursebuild-classic/` asset tree
+- `/api/course-ops` routes to the Course Ops server handler
+- `/api/coursebuild` routes to the CourseBuild Classic server handler
+
+`apps/.assetsignore` prevents preserved Classic backend and test files from being published as browser assets.
 
 ## Required production bindings
 
@@ -29,14 +39,15 @@ After production deployment, open:
 
 `https://coursebuild.itsbadlabs.com/api/course-ops`
 
-Expected result is JSON. Before the Canvas secret is configured, the endpoint may report `canvasConfigured: false`; after configuration and redeployment, it should report `canvasConfigured: true` and the approved Canvas hostname.
+Expected result is JSON. Before the Canvas secret is configured, the endpoint may report `canvasConfigured: false`; after configuration and deployment, it should report `canvasConfigured: true` and the approved Canvas hostname.
 
-Then open `https://coursebuild.itsbadlabs.com/` and use the Course Ops Canvas Inspector with the Canvas base URL and course ID.
+Then verify:
 
-## Architecture
+1. `https://coursebuild.itsbadlabs.com/` redirects to Course Ops.
+2. `https://coursebuild.itsbadlabs.com/apps/course-ops/` serves the Course Ops Inspector.
+3. `https://coursebuild.itsbadlabs.com/apps/coursebuild-classic/` still serves CourseBuild Classic.
+4. The Course Ops Inspector can verify and inspect an approved Canvas course without exposing the token to the browser.
 
-- `/api/course-ops` → `worker.js` → Course Ops read-only API handlers.
-- `/api/coursebuild` → `worker.js` → preserved CourseBuild Classic API handlers.
-- All other requests → `env.ASSETS.fetch(request)`.
+## Release boundary
 
-The Worker patch changes deployment architecture only. Course Ops remains read-only; it does not add Canvas mutations, bulk editing, or mutation verification.
+This deployment patch changes static-asset routing only. Course Ops remains read-only. It does not add Canvas mutations, bulk editing, or mutation verification. A successful Cloudflare build is deployment evidence, not proof that Canvas inspection works end to end; the smoke tests above are still required.
