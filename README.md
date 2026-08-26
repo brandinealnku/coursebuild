@@ -8,6 +8,8 @@ This repository now hosts two independent course-tooling applications.
 
 Course Ops is the Canvas course-operations product: a fast control layer for understanding existing shells, editing content, bulk administration, cross-course operations, and verified changes.
 
+The repository root routes directly to Course Ops so `coursebuild.itsbadlabs.com/` opens the active application after deployment.
+
 Signature workflow: **Inspect → Select → Change → Review → Apply → Verify**.
 
 ## Preserved product — CourseBuild Classic
@@ -16,7 +18,7 @@ Signature workflow: **Inspect → Select → Change → Review → Apply → Ver
 
 The complete pre-transition CourseBuild application is preserved intact from commit `8600f8a58526b8bfe64398e29f3f3957d9762df9`.
 
-A second immutable reference point is available on branch `archive/coursebuild-classic-2026-08`.
+A second preserved reference point is available on branch `archive/coursebuild-classic-2026-08`.
 
 ## Repository structure
 
