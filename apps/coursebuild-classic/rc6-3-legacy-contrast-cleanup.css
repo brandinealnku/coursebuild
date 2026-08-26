@@ -1,0 +1,43 @@
+/* CourseBuild RC6.3 — legacy contrast cleanup
+   Reset dark-theme descendant colors now that RC4/RC5 containers render on light RC6 surfaces. */
+
+/* RC4 command center */
+.rc4-home-command{color:var(--cb-ink)!important;background:var(--cb-surface)!important}
+.rc4-home-kicker span{border-color:var(--cb-line)!important;background:var(--cb-surface-subtle)!important;color:#344054!important}
+.rc4-home-kicker em{color:#4338ca!important}
+.rc4-home-main h3{color:var(--cb-ink)!important}
+.rc4-home-main>p{color:#475467!important}
+.rc4-home-progress strong{color:var(--cb-ink)!important}
+.rc4-home-progress span{color:#667085!important}
+.rc4-home-progress i{background:#e4e7ec!important}
+.rc4-home-next{border-color:var(--cb-line)!important;background:#f8fafc!important}
+.rc4-home-next>span{color:#4f46e5!important}
+.rc4-home-next h4{color:var(--cb-ink)!important}
+.rc4-home-next p{color:#475467!important}
+.rc4-home-next .primary{background:var(--cb-ink)!important;color:#fff!important;border-color:var(--cb-ink)!important}
+
+/* RC4 workflow stages */
+.rc4-stage{background:#f2f4f7!important;color:#475467!important}
+.rc4-stage i{background:#e4e7ec!important;color:#667085!important}
+.rc4-stage.done{background:#ecfdf3!important;color:#067647!important}
+.rc4-stage.done i{background:#d1fadf!important;color:#067647!important}
+.rc4-stage.active{outline:1px solid #a5b4fc!important;background:#eef2ff!important;color:#3730a3!important}
+.rc4-stage.active i{background:#e0e7ff!important;color:#4338ca!important}
+
+/* RC5 content that retained dark-theme values */
+.rc5-kicker span,.rc5-home-blueprint header span,.rc5-next>span,.rc5-home-status>div span{color:#667085!important}
+.rc5-kicker em,.rc5-home-blueprint header button{color:#4338ca!important}
+.rc5-home h3,.rc5-home-blueprint h4,.rc5-next strong{color:var(--cb-ink)!important}
+.rc5-course-code,.rc5-next p,.rc5-home-status li,.rc5-map-module small,.rc5-map-module em{color:#475467!important}
+.rc5-home-status li.done{color:#067647!important}
+
+/* Generic legacy text inside modern light surfaces */
+.rc4-home-command .eyebrow,.rc5-home .eyebrow,.cdo-command .eyebrow,.cdo-trust-panel .eyebrow{color:#667085!important}
+.rc4-home-command small,.rc5-home small,.cdo-command small,.cdo-trust-panel small{color:#475467!important}
+
+/* Keep true dark buttons readable */
+.rc4-home-command .primary,.rc5-home .primary,.cdo-command .primary{color:#fff!important}
+
+@media(max-width:760px){
+  .rc4-home-command,.rc5-home{color:var(--cb-ink)!important}
+}

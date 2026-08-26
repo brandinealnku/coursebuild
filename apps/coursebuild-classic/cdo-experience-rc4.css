@@ -1,0 +1,154 @@
+/* CourseBuild RC4 — Chief Design Officer experience direction */
+:root{
+  --cdo-ink:#07111f;
+  --cdo-muted:#667085;
+  --cdo-line:#e4e7ec;
+  --cdo-soft:#f8fafc;
+  --cdo-violet:#6f63ff;
+  --cdo-violet-soft:#f1efff;
+  --cdo-good:#13795b;
+  --cdo-good-soft:#edf9f4;
+}
+
+.cdo-command{
+  display:grid;
+  grid-template-columns:minmax(180px,1.15fr) minmax(150px,.9fr) minmax(220px,1.35fr) auto;
+  gap:18px;
+  align-items:center;
+  margin:0 0 24px;
+  padding:18px 20px;
+  border:1px solid var(--cdo-line);
+  border-radius:16px;
+  background:linear-gradient(135deg,#fff 0%,#fbfbff 100%);
+  box-shadow:0 10px 30px rgba(7,17,31,.045);
+}
+.cdo-command>div{min-width:0}
+.cdo-command span{
+  display:block;
+  margin-bottom:5px;
+  color:#7c8493;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+.cdo-command strong{display:block;color:var(--cdo-ink);font-size:14px;line-height:1.3}
+.cdo-command-course strong{font-size:16px;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cdo-command-progress>div{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.cdo-command-progress>div>strong{font-size:18px}
+.cdo-command-progress i{display:block;height:6px;overflow:hidden;border-radius:999px;background:#e9ecf2}
+.cdo-command-progress i b{display:block;height:100%;border-radius:inherit;background:var(--cdo-violet)}
+.cdo-command-next small{display:block;margin-top:3px;color:var(--cdo-muted);font-size:12px;line-height:1.35}
+.cdo-command-action{min-height:42px;white-space:nowrap}
+
+.steps .cdo-blueprint-nav{position:relative;font-weight:800}
+.steps .cdo-blueprint-nav::after{
+  content:'';
+  position:absolute;
+  left:50%;
+  bottom:4px;
+  width:18px;
+  height:2px;
+  border-radius:999px;
+  background:var(--cdo-violet);
+  transform:translateX(-50%);
+  opacity:.55;
+}
+.steps .cdo-blueprint-nav.active::after{width:34px;opacity:1}
+
+.cdo-blueprint-directive{
+  display:grid;
+  grid-template-columns:minmax(0,1.2fr) minmax(240px,.8fr);
+  gap:24px;
+  align-items:end;
+  margin:4px 0 14px;
+  padding:18px 20px;
+  border-left:3px solid var(--cdo-violet);
+  border-radius:0 12px 12px 0;
+  background:var(--cdo-violet-soft);
+}
+.cdo-blueprint-directive span{
+  display:block;
+  margin-bottom:5px;
+  color:#6b5ee8;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+.cdo-blueprint-directive strong{display:block;color:var(--cdo-ink);font-size:17px;line-height:1.3;letter-spacing:-.01em}
+.cdo-blueprint-directive p{margin:0;color:#5f6572;font-size:13px;line-height:1.45}
+.cdo-blueprint-directive.approved{border-left-color:var(--cdo-good);background:var(--cdo-good-soft)}
+.cdo-blueprint-directive.approved span{color:var(--cdo-good)}
+
+.cdo-blueprint-active .rc3-blueprint-workspace{
+  border:1px solid #dfe2ea;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 18px 50px rgba(7,17,31,.055);
+}
+.cdo-blueprint-active .rc3-course-map{padding:4px}
+.cdo-blueprint-active .rc3-module{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.cdo-blueprint-active .rc3-module:focus-within{border-color:#bbb5ff;box-shadow:0 0 0 3px rgba(111,99,255,.08)}
+.cdo-blueprint-active .rc3-item.selected{box-shadow:inset 3px 0 0 var(--cdo-violet)}
+
+.cdo-trust-panel{
+  display:grid;
+  grid-template-columns:minmax(230px,.8fr) minmax(0,1.2fr);
+  gap:28px;
+  margin:18px 0;
+  padding:22px;
+  border:1px solid var(--cdo-line);
+  border-radius:16px;
+  background:#fff;
+}
+.cdo-trust-panel>div>span{
+  display:block;
+  margin-bottom:7px;
+  color:#7c8493;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+.cdo-trust-panel h3{margin:0;color:var(--cdo-ink);font-size:19px;line-height:1.25;letter-spacing:-.02em}
+.cdo-trust-panel ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none}
+.cdo-trust-panel li{padding:13px;border-radius:10px;background:var(--cdo-soft)}
+.cdo-trust-panel li strong{display:block;margin-bottom:4px;color:var(--cdo-ink);font-size:12px}
+.cdo-trust-panel li span{display:block;color:var(--cdo-muted);font-size:11px;line-height:1.4}
+.cdo-trust-panel.ready{border-color:#cdebdc;background:linear-gradient(135deg,#fff 0%,#f5fbf8 100%)}
+.cdo-trust-panel.ready h3{color:#0f664d}
+
+@media (max-width:980px){
+  .cdo-command{grid-template-columns:1fr 1fr}
+  .cdo-command-action{width:100%}
+  .cdo-trust-panel{grid-template-columns:1fr}
+}
+
+@media (max-width:680px){
+  .cdo-command{
+    grid-template-columns:1fr;
+    gap:12px;
+    margin:0 0 18px;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:none;
+  }
+  .cdo-command-course{padding-bottom:10px;border-bottom:1px solid var(--cdo-line)}
+  .cdo-command-course strong{font-size:15px;white-space:normal}
+  .cdo-command-progress{display:grid;grid-template-columns:1fr;gap:3px}
+  .cdo-command-next{padding-top:2px}
+  .cdo-command-next strong{font-size:15px}
+  .cdo-command-action{min-height:46px}
+  .cdo-blueprint-directive{grid-template-columns:1fr;gap:8px;margin-top:0;padding:15px}
+  .cdo-blueprint-directive strong{font-size:15px}
+  .cdo-trust-panel{gap:16px;padding:16px;border-radius:12px}
+  .cdo-trust-panel h3{font-size:17px}
+  .cdo-trust-panel ul{grid-template-columns:1fr}
+  .cdo-blueprint-active .rc3-blueprint-workspace{border-radius:12px;box-shadow:none}
+  .mobile-section-nav option[value="plan"]{font-weight:800}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .cdo-blueprint-active .rc3-module{transition:none}
+}

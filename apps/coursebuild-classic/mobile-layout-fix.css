@@ -1,0 +1,18 @@
+/* CourseBuild mobile layout hotfix — remove blank gap between course chrome and section content */
+@media (max-width:760px){
+  /* Keep the mobile stack in normal document flow. Earlier RC layers use sticky offsets
+     that can push the section selector down and leave an empty band on iOS Safari. */
+  .topbar{position:relative!important;top:auto!important}
+  main{margin-top:0!important;padding-top:0!important}
+  .hero,.steps{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important}
+  .mobile-section-nav{
+    position:relative!important;
+    top:auto!important;
+    margin:0!important;
+    transform:none!important;
+    width:100%!important;
+    z-index:40!important;
+  }
+  .view{margin-top:0!important;padding-top:18px!important}
+  .view>.section-head:first-child{margin-top:0!important}
+}

@@ -1,38 +1,39 @@
-# CourseBuild
+# CourseBuild repository · ITSBAD Labs
 
-**CourseBuild turns existing course materials into a structured, reviewable course ready for Canvas.**
+This repository now hosts two independent course-tooling applications.
 
-This repository is the standalone CourseBuild Independent User RC1 product build extracted from the original `inf125-ai-course-studio` prototype. The browser application lives at the repository root so it can deploy directly to Cloudflare Pages.
+## Active development — Course Ops
 
-## Product workflow
+`apps/course-ops/`
 
-1. Start or reopen a course.
-2. Define the course setup.
-3. Import an existing syllabus or course plan.
-4. Review and approve the proposed course blueprint.
-5. Generate and approve course content.
-6. Preview what is ready for Canvas.
-7. Publish through the separately configured CourseBuild backend.
-8. Adapt an approved master course for other delivery formats.
+Course Ops is the Canvas course-operations product: a fast control layer for understanding existing shells, editing content, bulk administration, cross-course operations, and verified changes.
 
-## Cloudflare Pages
+The repository root routes directly to Course Ops so `coursebuild.itsbadlabs.com/` opens the active application after deployment.
 
-- Production branch: `main`
-- Framework preset: None
-- Build command: leave blank
-- Build output directory: repository root
-- Intended custom domain: `coursebuild.itsbadlabs.com`
+Signature workflow: **Inspect → Select → Change → Review → Apply → Verify**.
 
-## Public-repository security boundary
+## Preserved product — CourseBuild Classic
 
-This repository intentionally contains **no API keys, Canvas access tokens, Gemini keys, Google Apps Script deployment URLs, or production credentials**. Backend services are deployed separately and configured at runtime for pilot use.
+`apps/coursebuild-classic/`
 
-Do not commit institutional data, student information, private pilot exports, secrets, or credentials.
+The complete pre-transition CourseBuild application is preserved intact from commit `8600f8a58526b8bfe64398e29f3f3957d9762df9`.
 
-No open-source license is granted. All rights are reserved unless explicitly stated otherwise.
+A second preserved reference point is available on branch `archive/coursebuild-classic-2026-08`.
 
-## RC1
+## Repository structure
 
-Independent User RC1 focuses on making CourseBuild understandable to instructors who did not build it. It adds customer-facing language, progressive disclosure for research tools, a five-stage workflow indicator, transparent AI fallback messaging, and explicit pilot Canvas-connection disclosure.
+```text
+apps/
+  coursebuild-classic/   Existing source-grounded course-creation product
+  course-ops/            New Canvas course-operations product
+packages/                Deliberately shared infrastructure only
+docs/                    Product boundaries and decisions
+```
 
-Current pilot limitations include real user authentication, Canvas OAuth, multi-tenant authorization, institutional roles, enterprise retention controls, and production-grade audit logging.
+## Transition rule
+
+Do not add Course Ops features to CourseBuild Classic files. Do not extract shared code prematurely. Each application owns its own UI and product model; shared infrastructure is extracted only when a tested cross-product need exists.
+
+## Verification
+
+This repository structure does not prove either application is production-ready. Browser/device checks and real Canvas end-to-end verification remain separate release gates.
