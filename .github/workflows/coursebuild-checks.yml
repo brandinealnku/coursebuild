@@ -27,6 +27,8 @@ jobs:
           test -f functions/api/coursebuild.js
           test -f worker.js
           test -f wrangler.jsonc
+          test -f package.json
+          test -f scripts/deploy-cloudflare.mjs
           test -f docs/COURSEBUILD_CLASSIC.md
           test -f docs/COURSE_OPS_PRODUCT_CONTEXT.md
           test -f docs/PRODUCT_DECISIONS.md
@@ -34,13 +36,20 @@ jobs:
       - name: Verify Cloudflare Worker deployment boundary
         run: |
           node --input-type=module --check < worker.js
+          node --check scripts/deploy-cloudflare.mjs
           node -e "const c=JSON.parse(require('fs').readFileSync('wrangler.jsonc','utf8')); if(c.assets.directory!== 'apps') process.exit(1); if(c.keep_vars!==true) process.exit(1); if(c.vars?.CANVAS_BASE_URL!=='https://nku.instructure.com') process.exit(1); if(!Array.isArray(c.secrets?.required)||!c.secrets.required.includes('CANVAS_ACCESS_TOKEN')) process.exit(1); if(!Array.isArray(c.assets.run_worker_first)||!c.assets.run_worker_first.includes('/api/*')||!c.assets.run_worker_first.includes('/apps/*')||!c.assets.run_worker_first.includes('/')) process.exit(1);"
+          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); if(p.scripts?.['deploy:cloudflare']!=='node scripts/deploy-cloudflare.mjs') process.exit(1);"
           grep -Fq '"main": "worker.js"' wrangler.jsonc
           grep -Fq '"keep_vars": true' wrangler.jsonc
           grep -Fq '"CANVAS_BASE_URL": "https://nku.instructure.com"' wrangler.jsonc
           grep -Fq '"required": ["CANVAS_ACCESS_TOKEN"]' wrangler.jsonc
           grep -Fq '"binding": "ASSETS"' wrangler.jsonc
           ! grep -Fq '"directory": "."' wrangler.jsonc
+          grep -Fq 'process.env.CANVAS_ACCESS_TOKEN' scripts/deploy-cloudflare.mjs
+          grep -Fq "['wrangler', 'deploy', '--secrets-file', secretsPath]" scripts/deploy-cloudflare.mjs
+          grep -Fq 'mode: 0o600' scripts/deploy-cloudflare.mjs
+          grep -Fq 'rmSync(tempDir, { recursive: true, force: true })' scripts/deploy-cloudflare.mjs
+          ! env -u CANVAS_ACCESS_TOKEN node scripts/deploy-cloudflare.mjs
           grep -Fq "url.pathname === '/api/course-ops'" worker.js
           grep -Fq "url.pathname === '/api/coursebuild'" worker.js
           grep -Fq "url.pathname === '/'" worker.js
