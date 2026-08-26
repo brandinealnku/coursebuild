@@ -4,6 +4,12 @@
   "main": "worker.js",
   "compatibility_date": "2026-08-26",
   "keep_vars": true,
+  "vars": {
+    "CANVAS_BASE_URL": "https://nku.instructure.com"
+  },
+  "secrets": {
+    "required": ["CANVAS_ACCESS_TOKEN"]
+  },
   "assets": {
     "directory": "apps",
     "binding": "ASSETS",
