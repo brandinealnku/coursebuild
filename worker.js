@@ -14,6 +14,12 @@ async function runPagesStyleHandler(request, env, getHandler, postHandler) {
   return methodNotAllowed();
 }
 
+function appAssetRequest(request, url) {
+  const assetUrl = new URL(url);
+  assetUrl.pathname = url.pathname.replace(/^\/apps/, '') || '/';
+  return new Request(assetUrl.toString(), request);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -26,6 +32,18 @@ export default {
       return runPagesStyleHandler(request, env, courseBuildGet, courseBuildPost);
     }
 
-    return env.ASSETS.fetch(request);
+    if (url.pathname === '/') {
+      return Response.redirect(new URL('/apps/course-ops/', url).toString(), 302);
+    }
+
+    if (url.pathname === '/apps' || url.pathname === '/apps/') {
+      return Response.redirect(new URL('/apps/course-ops/', url).toString(), 302);
+    }
+
+    if (url.pathname.startsWith('/apps/')) {
+      return env.ASSETS.fetch(appAssetRequest(request, url));
+    }
+
+    return new Response('Not found', { status: 404 });
   }
 };
