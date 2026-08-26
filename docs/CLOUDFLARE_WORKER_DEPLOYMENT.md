@@ -7,8 +7,10 @@ Course Ops is deployed as one Cloudflare Worker with server-side API routes plus
 - Repository: `brandinealnku/coursebuild`
 - Production branch: `main`
 - Root directory: repository root (`/` or blank/default)
-- Build command: `exit 0`
-- Deploy command: `npx wrangler deploy`
+- Build command: none or `exit 0`
+- Deploy command: `npm run deploy:cloudflare`
+
+Do not use `npx wrangler deploy` as the Cloudflare deploy command for this project. Course Ops requires the Canvas access token to be promoted from the protected Cloudflare build environment into a Worker runtime secret during the same deployment. `npm run deploy:cloudflare` performs that bridge without committing or printing the token.
 
 `wrangler.jsonc` defines `worker.js` as the Worker entrypoint. Static browser assets come only from the committed `apps/` directory through the `ASSETS` binding. The repository root is intentionally **not** used as the asset directory because Wrangler rejects a configuration where the Worker entrypoint is contained inside the static asset tree.
 
@@ -22,16 +24,23 @@ The Worker preserves the public routes:
 
 `apps/.assetsignore` prevents preserved Classic backend and test files from being published as browser assets.
 
-## Required production bindings
+## Required production configuration
 
-Add these in the Cloudflare Worker settings after the Worker code has been deployed:
+### Repository-controlled runtime variable
 
-- `CANVAS_ACCESS_TOKEN` — encrypted secret containing the Canvas API token.
-- `CANVAS_BASE_URL` — normal variable containing the approved Canvas origin, for example `https://institution.instructure.com`.
+`wrangler.jsonc` declares:
+
+- `CANVAS_BASE_URL=https://nku.instructure.com`
+
+### Cloudflare build secret
+
+Cloudflare Workers Builds must expose `CANVAS_ACCESS_TOKEN` to the build environment as a protected build variable/secret. The deploy wrapper reads it from `process.env`, writes a temporary `0600` JSON secrets file outside the repository, passes that file to `wrangler deploy --secrets-file`, and deletes the temporary directory in a `finally` block.
+
+The actual Canvas token must never be committed to this repository or written into browser assets.
+
+`wrangler.jsonc` also declares `CANVAS_ACCESS_TOKEN` in `secrets.required`, so a deployment fails closed if the runtime secret is not attached.
 
 Optionally, `COURSE_OPS_ALLOWED_CANVAS_HOSTS` may contain a comma-separated allowlist of additional Canvas hostnames. The server refuses to send the Canvas credential to any host not on the allowlist.
-
-Never commit the Canvas token to this repository.
 
 ## Deployment smoke test
 
@@ -39,7 +48,7 @@ After production deployment, open:
 
 `https://coursebuild.itsbadlabs.com/api/course-ops`
 
-Expected result is JSON. Before the Canvas secret is configured, the endpoint may report `canvasConfigured: false`; after configuration and deployment, it should report `canvasConfigured: true` and the approved Canvas hostname.
+Expected result is JSON with `canvasConfigured: true` and `nku.instructure.com` in `approvedCanvasHosts`.
 
 Then verify:
 
@@ -48,10 +57,6 @@ Then verify:
 3. `https://coursebuild.itsbadlabs.com/apps/coursebuild-classic/` still serves CourseBuild Classic.
 4. The Course Ops Inspector can verify and inspect an approved Canvas course without exposing the token to the browser.
 
-## GitHub reconnect note
-
-After reconnecting the Cloudflare Git integration, push a fresh commit to `main` to trigger the first build from the new connection. This documentation-only commit is safe to use for that purpose because it does not change Worker or application behavior.
-
 ## Release boundary
 
-This deployment patch changes static-asset routing only. Course Ops remains read-only. It does not add Canvas mutations, bulk editing, or mutation verification. A successful Cloudflare build is deployment evidence, not proof that Canvas inspection works end to end; the smoke tests above are still required.
+Course Ops remains read-only. This deployment patch only changes how the existing Canvas secret reaches the Worker runtime. It does not add Canvas mutations, bulk editing, or mutation verification. A successful Cloudflare deployment is deployment evidence, not proof that Canvas inspection works end to end; the smoke tests above are still required.
