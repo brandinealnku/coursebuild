@@ -22,11 +22,11 @@ jobs:
           test -f apps/course-ops/index.html
           test -f apps/course-ops/styles.css
           test -f apps/course-ops/app.js
+          test -f apps/.assetsignore
           test -f functions/api/course-ops.js
           test -f functions/api/coursebuild.js
           test -f worker.js
           test -f wrangler.jsonc
-          test -f .assetsignore
           test -f docs/COURSEBUILD_CLASSIC.md
           test -f docs/COURSE_OPS_PRODUCT_CONTEXT.md
           test -f docs/PRODUCT_DECISIONS.md
@@ -34,16 +34,18 @@ jobs:
       - name: Verify Cloudflare Worker deployment boundary
         run: |
           node --input-type=module --check < worker.js
-          node -e "JSON.parse(require('fs').readFileSync('wrangler.jsonc','utf8'))"
+          node -e "const c=JSON.parse(require('fs').readFileSync('wrangler.jsonc','utf8')); if(c.assets.directory!== 'apps') process.exit(1); if(!Array.isArray(c.assets.run_worker_first)||!c.assets.run_worker_first.includes('/api/*')||!c.assets.run_worker_first.includes('/apps/*')||!c.assets.run_worker_first.includes('/')) process.exit(1);"
           grep -Fq '"main": "worker.js"' wrangler.jsonc
           grep -Fq '"binding": "ASSETS"' wrangler.jsonc
-          grep -Fq '"run_worker_first": ["/api/*"]' wrangler.jsonc
+          ! grep -Fq '"directory": "."' wrangler.jsonc
           grep -Fq "url.pathname === '/api/course-ops'" worker.js
           grep -Fq "url.pathname === '/api/coursebuild'" worker.js
-          grep -Fq 'env.ASSETS.fetch(request)' worker.js
-          grep -Fq 'functions/' .assetsignore
-          grep -Fq 'worker.js' .assetsignore
-          grep -Fq 'wrangler.jsonc' .assetsignore
+          grep -Fq "url.pathname === '/'" worker.js
+          grep -Fq "url.pathname.startsWith('/apps/')" worker.js
+          grep -Fq "replace(/^\\/apps/, '')" worker.js
+          grep -Fq 'env.ASSETS.fetch(appAssetRequest(request, url))' worker.js
+          grep -Fq 'coursebuild-classic/functions/' apps/.assetsignore
+          grep -Fq 'coursebuild-classic/tests/' apps/.assetsignore
       - name: Check Course Ops inspector syntax and read-only boundary
         run: |
           node --check apps/course-ops/app.js
