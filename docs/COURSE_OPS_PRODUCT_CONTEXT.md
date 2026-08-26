@@ -29,21 +29,45 @@ An instructor or course coordinator who already has one or more Canvas shells an
 - AI may translate instructor intent into a proposed change set; AI does not bypass review or verification.
 - Do not become a replacement LMS.
 
-## V0.1 focus
+## V0.1 — Canvas Inspector
 
-- Canvas connection and course selection
-- Course explorer across major Canvas object types
-- Universal search/filtering
-- Spreadsheet-like content table
+The first product slice implements **Inspect** only.
+
+Implemented in this slice:
+
+- verify one instructor-supplied Canvas course against the server-side Canvas credential;
+- enforce an approved Canvas-host boundary before the service can send the Canvas credential;
+- fresh read-only inventory for Modules, Pages, Assignments, Discussions, Quizzes, Files, and Announcements;
+- module association where Canvas exposes the item in a module;
+- searchable/filterable course table;
+- type, publication-state, and module filters;
+- direct links back to the Canvas object;
+- visible timestamp for the fresh Canvas read;
+- browser storage limited to Canvas URL and course ID, never the Canvas token.
+
+Not implemented in this slice:
+
+- multi-select;
+- edits or mutations of any kind;
+- bulk operations;
+- change-set preview;
+- apply/rollback;
+- mutation verification;
+- cross-course operations;
+- AI commands.
+
+A successful inspection is evidence only that Course Ops could read that Canvas course at that time. It is not evidence that later mutation capabilities work.
+
+## Planned V0.1 continuation
+
 - Multi-select
 - First safe bulk operations
 - Change-set preview
 - Per-object execution state
 - Read-back verification
 
-## Explicit non-goals for the repository transition
+## Non-goals
 
-- No new Canvas feature implementation
 - No course-generation workflow
 - No AI content generator
 - No student tutor
