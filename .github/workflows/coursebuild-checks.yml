@@ -23,10 +23,27 @@ jobs:
           test -f apps/course-ops/styles.css
           test -f apps/course-ops/app.js
           test -f functions/api/course-ops.js
+          test -f functions/api/coursebuild.js
+          test -f worker.js
+          test -f wrangler.jsonc
+          test -f .assetsignore
           test -f docs/COURSEBUILD_CLASSIC.md
           test -f docs/COURSE_OPS_PRODUCT_CONTEXT.md
           test -f docs/PRODUCT_DECISIONS.md
           test -f packages/README.md
+      - name: Verify Cloudflare Worker deployment boundary
+        run: |
+          node --input-type=module --check < worker.js
+          node -e "JSON.parse(require('fs').readFileSync('wrangler.jsonc','utf8'))"
+          grep -Fq '"main": "worker.js"' wrangler.jsonc
+          grep -Fq '"binding": "ASSETS"' wrangler.jsonc
+          grep -Fq '"run_worker_first": ["/api/*"]' wrangler.jsonc
+          grep -Fq "url.pathname === '/api/course-ops'" worker.js
+          grep -Fq "url.pathname === '/api/coursebuild'" worker.js
+          grep -Fq 'env.ASSETS.fetch(request)' worker.js
+          grep -Fq 'functions/' .assetsignore
+          grep -Fq 'worker.js' .assetsignore
+          grep -Fq 'wrangler.jsonc' .assetsignore
       - name: Check Course Ops inspector syntax and read-only boundary
         run: |
           node --check apps/course-ops/app.js

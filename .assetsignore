@@ -1,0 +1,17 @@
+# Server/runtime files
+worker.js
+wrangler.jsonc
+functions/
+
+# Repository and CI internals
+.github/
+docs/
+packages/
+tests/
+.gitignore
+README.md
+*.md
+
+# Do not publish nested backend/test files from preserved Classic
+apps/coursebuild-classic/functions/
+apps/coursebuild-classic/tests/
