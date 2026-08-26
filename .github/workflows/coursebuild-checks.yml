@@ -34,8 +34,9 @@ jobs:
       - name: Verify Cloudflare Worker deployment boundary
         run: |
           node --input-type=module --check < worker.js
-          node -e "const c=JSON.parse(require('fs').readFileSync('wrangler.jsonc','utf8')); if(c.assets.directory!== 'apps') process.exit(1); if(!Array.isArray(c.assets.run_worker_first)||!c.assets.run_worker_first.includes('/api/*')||!c.assets.run_worker_first.includes('/apps/*')||!c.assets.run_worker_first.includes('/')) process.exit(1);"
+          node -e "const c=JSON.parse(require('fs').readFileSync('wrangler.jsonc','utf8')); if(c.assets.directory!== 'apps') process.exit(1); if(c.keep_vars!==true) process.exit(1); if(!Array.isArray(c.assets.run_worker_first)||!c.assets.run_worker_first.includes('/api/*')||!c.assets.run_worker_first.includes('/apps/*')||!c.assets.run_worker_first.includes('/')) process.exit(1);"
           grep -Fq '"main": "worker.js"' wrangler.jsonc
+          grep -Fq '"keep_vars": true' wrangler.jsonc
           grep -Fq '"binding": "ASSETS"' wrangler.jsonc
           ! grep -Fq '"directory": "."' wrangler.jsonc
           grep -Fq "url.pathname === '/api/course-ops'" worker.js
