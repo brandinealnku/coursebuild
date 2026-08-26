@@ -12,6 +12,7 @@ if (!token) {
 
 const tempDir = mkdtempSync(join(tmpdir(), 'coursebuild-secrets-'));
 const secretsPath = join(tempDir, 'secrets.json');
+let exitCode = 1;
 
 try {
   writeFileSync(
@@ -28,10 +29,11 @@ try {
 
   if (result.error) {
     console.error('Wrangler could not be started:', result.error.message);
-    process.exit(1);
+  } else {
+    exitCode = result.status ?? 1;
   }
-
-  process.exit(result.status ?? 1);
 } finally {
   rmSync(tempDir, { recursive: true, force: true });
 }
+
+process.exitCode = exitCode;
