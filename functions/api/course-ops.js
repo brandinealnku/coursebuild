@@ -40,9 +40,9 @@ async function requestJson(url,init={}){
   if(!response.ok){
     const endpoint=endpointLabel(url),remote=canvasMessage(body);
     if(response.status===401)throw new CanvasRequestError('Canvas rejected the configured access token. Generate or replace the Canvas access token and try again.',{status:401,code:'CANVAS_TOKEN_REJECTED',endpoint,canvasMessage:remote});
-    if(response.status===403)throw new CanvasRequestError('Canvas denied access to this API request. Confirm that the Canvas account that created this token can open this course and that NKU permits this API action.',{status:403,code:'CANVAS_ACCESS_DENIED',endpoint,canvasMessage:remote});
-    if(response.status===404)throw new CanvasRequestError('Canvas could not find the requested course or API resource. Confirm the numeric Canvas course ID and your access to that course.',{status:404,code:'CANVAS_RESOURCE_NOT_FOUND',endpoint,canvasMessage:remote});
-    throw new CanvasRequestError(remote||`Canvas request failed (${response.status}).`,{status:response.status,code:'CANVAS_REQUEST_FAILED',endpoint,canvasMessage:remote});
+    if(response.status===403)throw new CanvasRequestError(`Canvas denied access to ${endpoint}. Confirm that the Canvas account that created this token can access this resource and that NKU permits this API action.`,{status:403,code:'CANVAS_ACCESS_DENIED',endpoint,canvasMessage:remote});
+    if(response.status===404)throw new CanvasRequestError(`Canvas could not find ${endpoint}. Confirm the numeric Canvas course ID and your access to this course.`,{status:404,code:'CANVAS_RESOURCE_NOT_FOUND',endpoint,canvasMessage:remote});
+    throw new CanvasRequestError(remote||`Canvas request failed (${response.status}) at ${endpoint}.`,{status:response.status,code:'CANVAS_REQUEST_FAILED',endpoint,canvasMessage:remote});
   }
   return{body,response};
 }
@@ -57,14 +57,10 @@ async function paged(url,token){
 }
 const enc=v=>encodeURIComponent(String(v));
 function courseUrl(c,path=''){return `${c.base}/api/v1/courses/${enc(c.courseId)}${path}`;}
-async function diagnoseCanvasAccess(c){
-  const {body:profile}=await requestJson(`${c.base}/api/v1/users/self/profile`,{headers:canvasHeaders(c.token)});
-  const {body:course}=await requestJson(courseUrl(c),{headers:canvasHeaders(c.token)});
-  return{profile,course};
-}
+async function getCourse(c){const {body}=await requestJson(courseUrl(c),{headers:canvasHeaders(c.token)});return body;}
 async function verifyCourse(payload,env){
-  const c=canvasConfig(payload,env);const {profile,course:body}=await diagnoseCanvasAccess(c);
-  return{courseId:String(body.id||c.courseId),courseName:String(body.name||body.course_code||'').trim(),courseCode:String(body.course_code||''),canvasHost:c.host,courseUrl:body.html_url||`${c.base}/courses/${enc(c.courseId)}`,authenticatedUserId:String(profile.id||''),diagnostic:'token and course access verified'};
+  const c=canvasConfig(payload,env);const body=await getCourse(c);
+  return{courseId:String(body.id||c.courseId),courseName:String(body.name||body.course_code||'').trim(),courseCode:String(body.course_code||''),canvasHost:c.host,courseUrl:body.html_url||`${c.base}/courses/${enc(c.courseId)}`,diagnostic:'course access verified directly'};
 }
 function row(type,obj,moduleNames=[]){
   const title=String(obj.title||obj.name||obj.display_name||obj.filename||'Untitled');
@@ -73,7 +69,7 @@ function row(type,obj,moduleNames=[]){
   return{key:`${type}:${obj.id??obj.url??title}`,type,id:String(obj.id??obj.url??''),title,moduleNames,published:explicitlyUnpublished?false:published?true:null,dueAt:obj.due_at||null,unlockAt:obj.unlock_at||obj.delayed_post_at||null,lockAt:obj.lock_at||null,points:Number.isFinite(Number(obj.points_possible))?Number(obj.points_possible):null,updatedAt:obj.updated_at||obj.modified_at||null,htmlUrl:obj.html_url||obj.url||null};
 }
 async function inspectCourse(payload,env){
-  const c=canvasConfig(payload,env);const {profile,course}=await diagnoseCanvasAccess(c);
+  const c=canvasConfig(payload,env);const course=await getCourse(c);
   const announcementsUrl=`${c.base}/api/v1/announcements?context_codes[]=${encodeURIComponent(`course_${c.courseId}`)}&per_page=100`;
   const [modules,pages,assignments,discussions,files,quizzes,announcements]=await Promise.all([
     paged(courseUrl(c,'/modules?per_page=100'),c.token),paged(courseUrl(c,'/pages?per_page=100'),c.token),paged(courseUrl(c,'/assignments?per_page=100'),c.token),paged(courseUrl(c,'/discussion_topics?per_page=100'),c.token),paged(courseUrl(c,'/files?per_page=100'),c.token),paged(courseUrl(c,'/quizzes?per_page=100'),c.token),paged(announcementsUrl,c.token)
@@ -84,7 +80,7 @@ async function inspectCourse(payload,env){
   const modulesFor=(type,obj)=>{const keys=[`${type.toLowerCase()}:${obj.id}`];if(type==='Page')keys.push(`page:${obj.url}`);return[...new Set(keys.flatMap(k=>moduleMap.get(k)||[]))];};
   const rows=[...modules.map(m=>row('Module',m,[])),...pages.map(x=>row('Page',x,modulesFor('Page',x))),...assignments.map(x=>row('Assignment',x,modulesFor('Assignment',x))),...discussions.map(x=>row('Discussion',x,modulesFor('Discussion',x))),...quizzes.map(x=>row('Quiz',x,modulesFor('Quiz',x))),...files.map(x=>row('File',x,modulesFor('File',x))),...announcements.map(x=>row('Announcement',x,[]))];
   const counts=rows.reduce((out,r)=>(out[r.type]=(out[r.type]||0)+1,out),{});
-  return{inspectedAt:new Date().toISOString(),course:{id:String(course.id||c.courseId),name:course.name||course.course_code||'',code:course.course_code||'',url:course.html_url||`${c.base}/courses/${enc(c.courseId)}`,host:c.host},counts,rows,readOnly:true,verification:'fresh Canvas read',authenticatedUserId:String(profile.id||'')};
+  return{inspectedAt:new Date().toISOString(),course:{id:String(course.id||c.courseId),name:course.name||course.course_code||'',code:course.course_code||'',url:course.html_url||`${c.base}/courses/${enc(c.courseId)}`,host:c.host},counts,rows,readOnly:true,verification:'fresh Canvas read'};
 }
 
 export async function onRequestPost(context){
@@ -100,5 +96,5 @@ export async function onRequestPost(context){
 }
 export async function onRequestGet(context){
   const hosts=[...allowedCanvasHosts(context.env)];
-  return ok({service:'Course Ops',status:'available',canvasConfigured:Boolean(context.env.CANVAS_ACCESS_TOKEN),approvedCanvasHosts:hosts,readOnly:true,version:'canvas-inspector-2'});
+  return ok({service:'Course Ops',status:'available',canvasConfigured:Boolean(context.env.CANVAS_ACCESS_TOKEN),approvedCanvasHosts:hosts,readOnly:true,version:'canvas-inspector-3-course-first'});
 }

@@ -11,16 +11,23 @@
   const statusKey=row=>row.published===true?'published':row.published===false?'unpublished':'unknown';
   function saveTarget(){if(state.target)localStorage.setItem(STORE,JSON.stringify(state.target));}
   function loadTarget(){try{state.target=JSON.parse(localStorage.getItem(STORE)||'null');}catch{state.target=null;}if(state.target){q('#canvasBaseUrl').value=state.target.canvasBaseUrl||'';q('#canvasCourseId').value=state.target.canvasCourseId||'';}}
+  function apiError(body,response,fallback){
+    const parts=[body?.error||fallback||`Course Ops request failed (${response.status}).`];
+    if(body?.details?.endpoint)parts.push(`Endpoint: ${body.details.endpoint}`);
+    if(body?.details?.canvasMessage)parts.push(`Canvas: ${body.details.canvasMessage}`);
+    const error=new Error(parts.filter(Boolean).join(' · '));
+    error.code=body?.code||'';error.details=body?.details||null;return error;
+  }
   async function request(action,payload={}){
     const response=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action,...payload})});
     const body=await response.json().catch(()=>({ok:false,error:'Course Ops returned an unreadable response.'}));
-    if(!response.ok||body.ok===false)throw new Error(body.error||`Course Ops request failed (${response.status}).`);
+    if(!response.ok||body.ok===false)throw apiError(body,response);
     return body.data;
   }
   async function reorderRequest(payload){
     const response=await fetch(REORDER_API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'reorderModule',...payload})});
     const body=await response.json().catch(()=>({ok:false,error:'Course Ops returned an unreadable module reorder response.'}));
-    if(!response.ok||body.ok===false)throw new Error(body.error||`Module reorder failed (${response.status}).`);
+    if(!response.ok||body.ok===false)throw apiError(body,response,`Module reorder failed (${response.status}).`);
     return body.data;
   }
   async function loadService(){
@@ -115,6 +122,6 @@
     q('#reorderBottomButton').addEventListener('click',moveSelectedModuleToBottom);
   }
   function init(){loadTarget();bind();loadService();}
-  window.CourseOps={version:'canvas-inspector-module-reorder-pilot',capabilities:{canvasRead:true,canvasWrite:'module-reorder-pilot-only',bulkEdit:false,verification:true,scheduling:false},getState:()=>state};
+  window.CourseOps={version:'canvas-inspector-course-first-3',capabilities:{canvasRead:true,canvasWrite:'module-reorder-pilot-only',bulkEdit:false,verification:true,scheduling:false},getState:()=>state};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
