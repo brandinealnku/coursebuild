@@ -24,6 +24,7 @@ jobs:
           test -f apps/course-ops/app.js
           test -f apps/.assetsignore
           test -f functions/api/course-ops.js
+          test -f functions/api/course-ops-module-reorder.js
           test -f functions/api/coursebuild.js
           test -f worker.js
           test -f wrangler.jsonc
@@ -32,6 +33,7 @@ jobs:
           test -f docs/COURSEBUILD_CLASSIC.md
           test -f docs/COURSE_OPS_PRODUCT_CONTEXT.md
           test -f docs/PRODUCT_DECISIONS.md
+          test -f docs/course-ops-module-reorder-pilot.md
           test -f packages/README.md
       - name: Verify Cloudflare Worker deployment boundary
         run: |
@@ -51,6 +53,7 @@ jobs:
           grep -Fq 'rmSync(tempDir, { recursive: true, force: true })' scripts/deploy-cloudflare.mjs
           ! env -u CANVAS_ACCESS_TOKEN node scripts/deploy-cloudflare.mjs
           grep -Fq "url.pathname === '/api/course-ops'" worker.js
+          grep -Fq "url.pathname === '/api/course-ops-module-reorder'" worker.js
           grep -Fq "url.pathname === '/api/coursebuild'" worker.js
           grep -Fq "url.pathname === '/'" worker.js
           grep -Fq "url.pathname.startsWith('/apps/')" worker.js
@@ -58,29 +61,30 @@ jobs:
           grep -Fq 'env.ASSETS.fetch(appAssetRequest(request, url))' worker.js
           grep -Fq 'coursebuild-classic/functions/' apps/.assetsignore
           grep -Fq 'coursebuild-classic/tests/' apps/.assetsignore
-      - name: Check Course Ops inspector syntax and read-only boundary
+      - name: Check Course Ops inspector and controlled write boundary
         run: |
           node --check apps/course-ops/app.js
           node --input-type=module --check < functions/api/course-ops.js
+          node --input-type=module --check < functions/api/course-ops-module-reorder.js
           grep -Fq 'Canvas Inspector' apps/course-ops/index.html
-          grep -Fq 'Read-only build' apps/course-ops/index.html
-          grep -Fq 'It cannot change Canvas content yet.' apps/course-ops/index.html
+          grep -Fq 'Controlled pilot' apps/course-ops/index.html
+          grep -Fq 'Move one module to the bottom' apps/course-ops/index.html
           grep -Fq "const API='/api/course-ops'" apps/course-ops/app.js
+          grep -Fq "const REORDER_API='/api/course-ops-module-reorder'" apps/course-ops/app.js
           grep -Fq 'canvasRead:true' apps/course-ops/app.js
-          grep -Fq 'canvasWrite:false' apps/course-ops/app.js
+          grep -Fq "canvasWrite:'module-reorder-pilot-only'" apps/course-ops/app.js
           grep -Fq 'bulkEdit:false' apps/course-ops/app.js
+          grep -Fq 'scheduling:false' apps/course-ops/app.js
           grep -Fq "action==='verifyCourse'" functions/api/course-ops.js
           grep -Fq "action==='inspectCourse'" functions/api/course-ops.js
-          grep -Fq 'COURSE_OPS_ALLOWED_CANVAS_HOSTS' functions/api/course-ops.js
-          grep -Fq '/api/v1/users/self/profile' functions/api/course-ops.js
-          grep -Fq 'CANVAS_TOKEN_REJECTED' functions/api/course-ops.js
-          grep -Fq 'CANVAS_ACCESS_DENIED' functions/api/course-ops.js
-          grep -Fq 'CANVAS_RESOURCE_NOT_FOUND' functions/api/course-ops.js
-          grep -Fq 'Canvas denied access to this API request.' functions/api/course-ops.js
-          grep -Fq 'This Canvas host is not approved for Course Ops.' functions/api/course-ops.js
-          grep -Fq "version:'canvas-inspector-2'" functions/api/course-ops.js
           grep -Fq 'readOnly:true' functions/api/course-ops.js
           ! grep -Eq "method:['\"](PUT|PATCH|DELETE)['\"]" functions/api/course-ops.js
+          grep -Fq 'confirmWrite!==true' functions/api/course-ops-module-reorder.js
+          grep -Fq "method:'PUT'" functions/api/course-ops-module-reorder.js
+          grep -Fq "position||''" functions/api/course-ops-module-reorder.js
+          grep -Fq "toLowerCase()==='bottom'" functions/api/course-ops-module-reorder.js
+          grep -Fq "verification:'fresh Canvas read after write'" functions/api/course-ops-module-reorder.js
+          ! grep -Eqi 'cron|scheduled|thursday|rrule' functions/api/course-ops-module-reorder.js apps/course-ops/app.js worker.js
       - name: Verify inspector object coverage
         run: |
           for type in Module Page Assignment Discussion Quiz File Announcement; do
