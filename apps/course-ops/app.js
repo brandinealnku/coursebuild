@@ -1,6 +1,7 @@
-/* Course Ops Canvas Inspector v0.1 — read-only. */
+/* Course Ops Canvas Inspector + manual module reorder pilot. */
 (function(){
   const API='/api/course-ops';
+  const REORDER_API='/api/course-ops-module-reorder';
   const STORE='courseops.canvas.target.v1';
   const state={service:null,target:null,inspection:null,filters:{query:'',type:'',status:'',module:''}};
   const q=s=>document.querySelector(s);
@@ -16,6 +17,12 @@
     if(!response.ok||body.ok===false)throw new Error(body.error||`Course Ops request failed (${response.status}).`);
     return body.data;
   }
+  async function reorderRequest(payload){
+    const response=await fetch(REORDER_API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'reorderModule',...payload})});
+    const body=await response.json().catch(()=>({ok:false,error:'Course Ops returned an unreadable module reorder response.'}));
+    if(!response.ok||body.ok===false)throw new Error(body.error||`Module reorder failed (${response.status}).`);
+    return body.data;
+  }
   async function loadService(){
     const badge=q('#serviceStatus');
     try{
@@ -26,6 +33,7 @@
     }catch(error){badge.textContent='Service unavailable';badge.className='status warn';setMessage(`Course Ops service could not be reached. ${error.message||''}`,'error');}
   }
   function setMessage(text,type=''){const el=q('#connectionMessage');el.textContent=text;el.className=`message ${type}`;}
+  function setReorderMessage(text,type=''){const el=q('#reorderMessage');el.textContent=text;el.className=`message ${type}`;}
   function setBusy(busy){const button=q('#inspectButton');button.disabled=busy;button.textContent=busy?'Inspecting Canvas…':'Verify & inspect course';q('#refreshButton').disabled=busy;}
   async function inspect(target,{refresh=false}={}){
     setBusy(true);setMessage(refresh?'Refreshing the verified Canvas course…':'Verifying Canvas and loading the course shell…');
@@ -34,7 +42,7 @@
       q('#connectionBadge').textContent='Connected & verified';q('#connectionBadge').className='badge good';
       state.target={canvasBaseUrl:target.canvasBaseUrl,canvasCourseId:String(target.canvasCourseId)};saveTarget();
       const inspection=await request('inspectCourse',state.target);state.inspection=inspection;renderInspection();
-      setMessage(`Verified ${verified.courseName||'Canvas course'} and loaded a fresh read-only inventory.`,'success');
+      setMessage(`Verified ${verified.courseName||'Canvas course'} and loaded a fresh inventory.`,'success');
     }catch(error){
       q('#connectionBadge').textContent='Verification failed';q('#connectionBadge').className='badge warn';
       setMessage(`Course Ops could not verify and inspect this Canvas course. ${error.message||''}`,'error');
@@ -48,6 +56,14 @@
     q('#typeFilter').innerHTML='<option value="">All types</option>'+types.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
     q('#moduleFilter').innerHTML='<option value="">All modules</option>'+modules.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
     q('#typeFilter').value=state.filters.type;q('#moduleFilter').value=state.filters.module;
+  }
+  function fillReorderModules(){
+    const select=q('#reorderModuleSelect');
+    const modules=(state.inspection?.rows||[]).filter(r=>r.type==='Module');
+    select.innerHTML='<option value="">Choose a module</option>'+modules.map(m=>`<option value="${esc(m.id)}">${esc(m.title)}</option>`).join('');
+    q('#confirmReorder').checked=false;
+    q('#reorderBottomButton').disabled=true;
+    setReorderMessage('');
   }
   function renderSummary(){
     const counts=state.inspection?.counts||{};const order=['Module','Page','Assignment','Discussion','Quiz','File','Announcement'];
@@ -70,7 +86,21 @@
     const info=state.inspection;if(!info)return;const course=info.course||{};
     q('#courseTitle').textContent=course.name||course.code||'Canvas course';q('#courseMeta').textContent=[course.code,`Course ID ${course.id}`,course.host].filter(Boolean).join(' · ');
     q('#freshness').textContent=`Fresh Canvas read · ${fmtDate(info.inspectedAt)}`;q('#openCanvas').href=course.url||'#';
-    q('#inspector').classList.remove('hidden');renderSummary();fillFilters();renderTable();
+    q('#inspector').classList.remove('hidden');renderSummary();fillFilters();fillReorderModules();renderTable();
+  }
+  function syncReorderButton(){q('#reorderBottomButton').disabled=!(q('#reorderModuleSelect').value&&q('#confirmReorder').checked);}
+  async function moveSelectedModuleToBottom(){
+    if(!state.target)return;
+    const select=q('#reorderModuleSelect'),moduleId=select.value,moduleName=select.options[select.selectedIndex]?.text||'Selected module';
+    if(!moduleId||!q('#confirmReorder').checked)return;
+    const button=q('#reorderBottomButton');button.disabled=true;button.textContent='Moving & verifying…';setReorderMessage(`Moving “${moduleName}” to the bottom, then reading Canvas back…`);
+    try{
+      const result=await reorderRequest({...state.target,moduleId,position:'bottom',confirmWrite:true});
+      setReorderMessage(result.changed?`Verified: “${moduleName}” moved from position ${result.before.index} to ${result.after.index} of ${result.moduleCount}.`:`Verified no-op: “${moduleName}” is already at the bottom.`,'success');
+      const inspection=await request('inspectCourse',state.target);state.inspection=inspection;renderSummary();fillFilters();renderTable();fillReorderModules();
+    }catch(error){
+      setReorderMessage(`Module reorder was not verified. ${error.message||''}`,'error');
+    }finally{button.textContent='Move selected module to bottom';syncReorderButton();}
   }
   function bind(){
     q('#courseForm').addEventListener('submit',event=>{event.preventDefault();inspect({canvasBaseUrl:q('#canvasBaseUrl').value.trim(),canvasCourseId:q('#canvasCourseId').value.trim()});});
@@ -80,8 +110,11 @@
     q('#statusFilter').addEventListener('change',e=>{state.filters.status=e.target.value;renderTable();});
     q('#moduleFilter').addEventListener('change',e=>{state.filters.module=e.target.value;renderTable();});
     q('#clearFilters').addEventListener('click',()=>{state.filters={query:'',type:'',status:'',module:''};q('#searchInput').value='';q('#typeFilter').value='';q('#statusFilter').value='';q('#moduleFilter').value='';renderTable();});
+    q('#reorderModuleSelect').addEventListener('change',syncReorderButton);
+    q('#confirmReorder').addEventListener('change',syncReorderButton);
+    q('#reorderBottomButton').addEventListener('click',moveSelectedModuleToBottom);
   }
   function init(){loadTarget();bind();loadService();}
-  window.CourseOps={version:'canvas-inspector-1',capabilities:{canvasRead:true,canvasWrite:false,bulkEdit:false,verification:true},getState:()=>state};
+  window.CourseOps={version:'canvas-inspector-module-reorder-pilot',capabilities:{canvasRead:true,canvasWrite:'module-reorder-pilot-only',bulkEdit:false,verification:true,scheduling:false},getState:()=>state};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
