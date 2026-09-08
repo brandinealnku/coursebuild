@@ -1,4 +1,5 @@
 import { onRequestGet as courseOpsGet, onRequestPost as courseOpsPost } from './functions/api/course-ops.js';
+import { onRequestGet as moduleReorderGet, onRequestPost as moduleReorderPost } from './functions/api/course-ops-module-reorder.js';
 import { onRequestGet as courseBuildGet, onRequestPost as courseBuildPost } from './functions/api/coursebuild.js';
 
 function methodNotAllowed() {
@@ -26,6 +27,10 @@ export default {
 
     if (url.pathname === '/api/course-ops') {
       return runPagesStyleHandler(request, env, courseOpsGet, courseOpsPost);
+    }
+
+    if (url.pathname === '/api/course-ops-module-reorder') {
+      return runPagesStyleHandler(request, env, moduleReorderGet, moduleReorderPost);
     }
 
     if (url.pathname === '/api/coursebuild') {
