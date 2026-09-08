@@ -16,7 +16,7 @@
   <main>
     <section class="hero">
       <div><p class="eyebrow">Canvas course operations</p><h2>See the whole shell.</h2><p>Connect one Canvas course and inspect its modules, pages, assignments, discussions, quizzes, files, and announcements from a single searchable workspace.</p></div>
-      <aside class="read-only-note"><strong>Read-only build</strong><span>This version can inspect Canvas. It cannot change Canvas content yet.</span></aside>
+      <aside class="read-only-note"><strong>Controlled pilot</strong><span>Inspection is read-only. One explicit pilot action can move a selected module to the bottom and verify the result.</span></aside>
     </section>
 
     <section class="connect panel" aria-labelledby="connectTitle">
@@ -37,6 +37,16 @@
 
       <section id="summaryCards" class="summary-grid" aria-label="Canvas inventory summary"></section>
 
+      <section class="panel pilot-panel" aria-labelledby="pilotTitle">
+        <div class="section-head"><div><p class="eyebrow">Manual write pilot</p><h3 id="pilotTitle">Move one module to the bottom</h3><p>This is the exact action we will validate before adding any Thursday-night schedule. Course Ops reads Canvas again after the write and reports success only if the new order is verified.</p></div><span class="badge warn">Explicit write</span></div>
+        <div class="pilot-grid">
+          <label>Module<select id="reorderModuleSelect"><option value="">Choose a module</option></select></label>
+          <label class="confirm-write"><input id="confirmReorder" type="checkbox"> <span>I understand this will change the module order in Canvas.</span></label>
+          <button id="reorderBottomButton" class="primary danger-action" type="button" disabled>Move selected module to bottom</button>
+        </div>
+        <div id="reorderMessage" class="message" role="status" aria-live="polite"></div>
+      </section>
+
       <section class="panel table-panel">
         <div class="toolbar">
           <label class="search-label"><span>Search this course</span><input id="searchInput" type="search" placeholder="Search titles, modules, and types…"></label>
@@ -54,7 +64,7 @@
         </div>
       </section>
 
-      <section class="next panel"><div><p class="eyebrow">Next product layer</p><h3>Inspect is real. Change is next.</h3><p>The next build can add multi-select and a reviewable change set for safe bulk operations. Nothing in this build writes to Canvas.</p></div><div class="workflow" aria-label="Course Ops workflow"><span class="active">Inspect</span><span>Select</span><span>Change</span><span>Review</span><span>Apply</span><span>Verify</span></div></section>
+      <section class="next panel"><div><p class="eyebrow">Course Ops workflow</p><h3>Inspect → Select → Change → Review → Apply → Verify</h3><p>The module reorder pilot keeps the first write path intentionally narrow and auditable. Scheduling remains out of scope until this manual action is proven against a real course.</p></div><div class="workflow" aria-label="Course Ops workflow"><span class="active">Inspect</span><span class="active">Select</span><span class="active">Change</span><span class="active">Review</span><span class="active">Apply</span><span class="active">Verify</span></div></section>
     </section>
   </main>
   <script src="app.js"></script>
