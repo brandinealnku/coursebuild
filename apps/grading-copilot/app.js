@@ -1,6 +1,14 @@
 const $=s=>document.querySelector(s);
+const COURSE_OPS_API="/api/course-ops";
 const statusEl=$("#status"),courseForm=$("#courseForm"),courseId=$("#courseId"),courseMessage=$("#courseMessage"),assignment=$("#assignment"),result=$("#result");
 let connectedCourseId="";
+
+async function courseOps(payload){
+  const r=await fetch(COURSE_OPS_API,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+  const j=await r.json();
+  if(!r.ok||j.ok===false) throw new Error(j.error||"Course Ops request failed.");
+  return j.data;
+}
 
 async function api(payload){
   const r=await fetch("/api/grading-copilot",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
@@ -27,7 +35,7 @@ courseForm.onsubmit=async e=>{
   courseMessage.textContent="Verifying direct access to this Canvas course…";
   result.textContent="Choose an assignment to load its Canvas submissions.";
   try{
-    const course=await api({action:"verifyCourse",courseId:courseId.value.trim()});
+    const course=await courseOps({action:"verifyCourse",canvasBaseUrl:"https://nku.instructure.com",canvasCourseId:courseId.value.trim()});
     connectedCourseId=course.courseId;
     courseMessage.textContent="Connected: "+(course.courseName||course.courseCode||"Canvas course")+" · Course ID "+course.courseId;
     const assignments=await api({action:"listAssignments",courseId:connectedCourseId});
