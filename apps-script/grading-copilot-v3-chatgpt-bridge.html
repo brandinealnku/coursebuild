@@ -1,0 +1,79 @@
+<!-- Grading Copilot V3 — $0 ChatGPT Bridge
+Add these controls inside the Annotated Diagram workspace, after Load grading queue. -->
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+  <button id="exportChatGPT" type="button">Export for ChatGPT</button>
+  <label style="display:inline-flex;align-items:center;gap:8px">
+    <span>Import AI Results</span>
+    <input id="importResults" type="file" accept=".json,application/json" style="max-width:260px">
+  </label>
+</div>
+<div id="bridgeStatus" class="message">No AI API required.</div>
+
+<script>
+/* Move ONLY the code inside this script tag to the end of the existing script block. */
+let gradingWorkspaceCache = null;
+
+async function gradingExportForChatGPT_(){
+  const status=$('#bridgeStatus');
+  status.textContent='Building grading package…';
+  try{
+    const batch=await gateway({action:'exportBatch',courseId:'95682',assignmentName:'Annotated Diagram of an AI System'});
+    gradingWorkspaceCache=batch;
+    downloadJson_('annotated-diagram-chatgpt-batch.json',batch);
+    status.textContent=batch.students.length+' submissions exported. Upload this JSON file to this ChatGPT Project for grading.';
+  }catch(e){status.textContent='Export needs attention · '+e.message;}
+}
+
+async function gradingImportResults_(file){
+  const status=$('#bridgeStatus');
+  if(!file) return;
+  status.textContent='Validating AI results…';
+  try{
+    const raw=await file.text();
+    const parsed=JSON.parse(raw);
+    const checked=await gateway({action:'validateResults',resultsFile:parsed});
+    applyImportedResults_(checked.results);
+    status.textContent=checked.count+' grading proposals imported. Canvas has NOT been changed.';
+  }catch(e){status.textContent='Import needs attention · '+e.message;}
+}
+
+function applyImportedResults_(results){
+  results.forEach(r=>{
+    const index=Number(String(r.recordId).replace('gc-',''))-1;
+    const card=document.querySelector('[data-card="'+index+'"]');
+    if(!card) return;
+    Object.keys(r.scores).forEach(k=>{
+      const input=card.querySelector('.criterion[data-key="'+k+'"]');
+      if(input) input.value=r.scores[k];
+    });
+    const total=card.querySelector('.total');
+    if(total) total.value=r.total;
+    const conf=card.querySelector('.confidence');
+    if(conf) conf.value=r.confidence;
+    const route=card.querySelector('.reviewRoute');
+    if(route) route.value=r.route;
+    const badge=card.querySelector('.route');
+    if(badge) badge.textContent=r.route;
+    const feedback=card.querySelector('.feedback');
+    if(feedback) feedback.value=r.feedback;
+  });
+}
+
+function downloadJson_(filename,data){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+$('#exportChatGPT').addEventListener('click',gradingExportForChatGPT_);
+$('#importResults').addEventListener('change',e=>gradingImportResults_(e.target.files[0]));
+</script>
+
+<!-- IMPORTANT V2 PATCH:
+In gradingStudentCard_(), find the criterion input HTML and add:
+data-key="' + key + '"
+alongside data-card and data-max.
+This lets V3 map imported criterion scores into the correct boxes. -->
