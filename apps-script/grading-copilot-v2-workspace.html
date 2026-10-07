@@ -1,0 +1,53 @@
+<!-- Grading Copilot V2 review workspace.
+Paste the <section> inside <main> after the existing Canvas course card,
+then paste the <script> contents at the END of the existing script block. -->
+
+<section class="card" id="gradingWorkspace">
+  <h2>Annotated Diagram of an AI System</h2>
+  <p class="card-description">40 points · review-first grading workspace · Canvas writes disabled</p>
+  <button id="loadWorkspace" type="button">Load grading queue</button>
+  <div id="workspaceStatus" class="message">Ready to load the assignment.</div>
+  <div id="queue" style="margin-top:18px"></div>
+</section>
+
+<script>
+/* MOVE ONLY THE CODE INSIDE THIS SCRIPT TAG into the existing page's script block. */
+const RUBRIC_MAX={aiLiteracy:8,systemMapping:8,humanJudgment:6,perspectives:4,ethics:6,reflection:4,clarity:4};
+const RUBRIC_LABEL={aiLiteracy:'AI literacy',systemMapping:'System mapping',humanJudgment:'Human judgment',perspectives:'Multiple perspectives',ethics:'Ethical reasoning',reflection:'Revision / reflection',clarity:'Clarity / accessibility'};
+
+$('#loadWorkspace').addEventListener('click',async()=>{
+  const status=$('#workspaceStatus'),queue=$('#queue');
+  status.textContent='Loading Annotated Diagram submissions…'; queue.innerHTML='';
+  try{
+    const w=await gateway({action:'assignmentWorkspace',courseId:'95682',assignmentName:'Annotated Diagram of an AI System'});
+    status.textContent=w.submissions.length+' Canvas records loaded · '+w.assignment.pointsPossible+' points · read-only';
+    const submitted=w.submissions.filter(s=>s.submittedAt);
+    queue.innerHTML=submitted.map((s,i)=>studentCard(s,i)).join('');
+    bindScoreInputs();
+  }catch(e){status.textContent='Workspace needs attention · '+e.message;}
+});
+
+function studentCard(s,i){
+  const links=[];
+  if(s.url) links.push('<a target="_blank" href="'+esc(s.url)+'">Open submitted URL</a>');
+  (s.attachments||[]).forEach(a=>links.push('<a target="_blank" href="'+esc(a.url)+'">'+esc(a.filename)+'</a>'));
+  const criteria=Object.keys(RUBRIC_MAX).map(k=>'<label style="display:block;margin:8px 0">'+RUBRIC_LABEL[k]+' <input class="criterion" data-card="'+i+'" data-max="'+RUBRIC_MAX[k]+'" type="number" min="0" max="'+RUBRIC_MAX[k]+'" step="1" style="width:70px;margin-left:8px"> / '+RUBRIC_MAX[k]+'</label>').join('');
+  return '<article class="card" data-card="'+i+'" style="margin-top:14px">'+
+    '<div style="display:flex;justify-content:space-between;gap:12px;align-items:start"><div><strong>'+esc(s.studentName)+'</strong><div class="message">'+esc(s.submissionType||'submission')+(s.late?' · late':'')+'</div></div><span class="route" style="font-weight:700">BRANDI REVIEW</span></div>'+
+    '<div class="message">'+(links.length?links.join(' · '):'No directly linked attachment returned by Canvas.')+'</div>'+
+    '<details style="margin-top:12px"><summary><strong>Score rubric</strong></summary><div style="margin-top:10px">'+criteria+'</div></details>'+
+    '<div style="margin-top:14px"><label>Proposed score</label><input class="total" readonly value="0" style="max-width:100px"> / 40</div>'+
+    '<div style="margin-top:14px"><label>Confidence</label><select class="confidence"><option>LOW</option><option>MEDIUM</option><option>HIGH</option></select></div>'+
+    '<div style="margin-top:14px"><label>Proposed feedback</label><textarea class="feedback" rows="4" style="width:100%;padding:12px;border:1px solid #cfd4dc;border-radius:8px" placeholder="2–3 warm, specific sentences grounded in the student’s work."></textarea></div>'+
+    '<div style="margin-top:14px"><label>Review route</label><select class="reviewRoute"><option>BRANDI REVIEW</option><option>QUICK CHECK</option><option>APPROVE</option></select></div>'+
+    '</article>';
+}
+function bindScoreInputs(){
+  document.querySelectorAll('.criterion').forEach(el=>el.addEventListener('input',()=>{
+    const card=document.querySelector('[data-card="'+el.dataset.card+'"]');
+    let total=0; card.querySelectorAll('.criterion').forEach(x=>total+=Number(x.value||0));
+    card.querySelector('.total').value=total;
+  }));
+}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
