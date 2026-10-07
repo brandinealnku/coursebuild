@@ -1,4 +1,6 @@
-const $=s=>document.querySelector(s),statusEl=$("#status"),course=$("#course"),assignment=$("#assignment"),result=$("#result");
+const $=s=>document.querySelector(s);
+const statusEl=$("#status"),courseForm=$("#courseForm"),courseId=$("#courseId"),courseMessage=$("#courseMessage"),assignment=$("#assignment"),result=$("#result");
+let connectedCourseId="";
 
 async function api(payload){
   const r=await fetch("/api/grading-copilot",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
@@ -10,46 +12,41 @@ async function api(payload){
 (async()=>{
   try{
     const s=await api({action:"status"});
-    statusEl.textContent=`Connected to ${s.canvasHost} · Canvas writes ${s.writesEnabled?"enabled":"disabled"}`;
-    const cs=await api({action:"listCourses"});
-    if(!cs.length){
-      statusEl.textContent="Canvas connected, but Canvas returned no courses for this token.";
-      course.innerHTML='<option value="">No courses returned by Canvas</option>';
-      return;
-    }
-    statusEl.textContent+=` · ${cs.length} courses found`;
-    course.innerHTML='<option value="">Select a course…</option>'+cs.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+    statusEl.textContent=`Canvas service ready · ${s.canvasHost} · writes ${s.writesEnabled?"enabled":"disabled"}`;
   }catch(e){
-    statusEl.textContent="Canvas connection needs attention · "+e.message;
+    statusEl.textContent="Canvas service needs attention · "+e.message;
   }
 })();
 
-course.onchange=async()=>{
+courseForm.onsubmit=async e=>{
+  e.preventDefault();
+  connectedCourseId="";
   assignment.disabled=true;
-  assignment.innerHTML='<option>Loading…</option>';
+  assignment.innerHTML='<option value="">Verifying course…</option>';
+  courseMessage.textContent="Verifying direct access to this Canvas course…";
   result.textContent="Choose an assignment to load its Canvas submissions.";
-  if(!course.value){
-    assignment.innerHTML='<option value="">Select an assignment…</option>';
-    return;
-  }
   try{
-    const a=await api({action:"listAssignments",courseId:course.value});
-    assignment.innerHTML='<option value="">Select an assignment…</option>'+a.map(x=>`<option value="${x.id}">${x.name} · ${x.points_possible??"—"} pts</option>`).join("");
+    const course=await api({action:"verifyCourse",courseId:courseId.value.trim()});
+    connectedCourseId=course.courseId;
+    courseMessage.textContent=`Connected: ${course.courseName||course.courseCode||"Canvas course"} · Course ID ${course.courseId}`;
+    const assignments=await api({action:"listAssignments",courseId:connectedCourseId});
+    assignment.innerHTML='<option value="">Select an assignment…</option>'+assignments.map(x=>`<option value="${x.id}">${x.name} · ${x.points_possible??"—"} pts</option>`).join("");
     assignment.disabled=false;
+    result.textContent=`${assignments.length} assignments loaded from Canvas.`;
   }catch(e){
-    assignment.innerHTML='<option>Error loading assignments</option>';
-    result.textContent=e.message;
+    assignment.innerHTML='<option value="">Course connection failed</option>';
+    courseMessage.textContent="Course connection needs attention · "+e.message;
   }
 };
 
 assignment.onchange=async()=>{
-  if(!assignment.value) return;
+  if(!assignment.value||!connectedCourseId) return;
   result.textContent="Loading submissions…";
   try{
-    const s=await api({action:"listSubmissions",courseId:course.value,assignmentId:assignment.value});
+    const s=await api({action:"listSubmissions",courseId:connectedCourseId,assignmentId:assignment.value});
     const submitted=s.filter(x=>x.submitted_at).length;
-    result.textContent=`Canvas returned ${s.length} enrollment records; ${submitted} have a submitted-at timestamp. Next: match these runtime records to proposed grades and feedback.`;
+    result.textContent=`Canvas returned ${s.length} enrollment records; ${submitted} have a submitted-at timestamp. No grades have been written.`;
   }catch(e){
-    result.textContent=e.message;
+    result.textContent="Submission load needs attention · "+e.message;
   }
 };
