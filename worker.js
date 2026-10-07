@@ -1,6 +1,7 @@
 import { onRequestGet as courseOpsGet, onRequestPost as courseOpsPost } from './functions/api/course-ops.js';
 import { onRequestGet as moduleReorderGet, onRequestPost as moduleReorderPost } from './functions/api/course-ops-module-reorder.js';
 import { onRequestGet as courseBuildGet, onRequestPost as courseBuildPost } from './functions/api/coursebuild.js';
+import { onRequestGet as gradingCopilotGet, onRequestPost as gradingCopilotPost } from './functions/api/grading-copilot.js';
 
 function methodNotAllowed() {
   return new Response(JSON.stringify({ ok: false, error: 'Method not allowed.' }), {
@@ -35,6 +36,10 @@ export default {
 
     if (url.pathname === '/api/coursebuild') {
       return runPagesStyleHandler(request, env, courseBuildGet, courseBuildPost);
+    }
+
+    if (url.pathname === '/api/grading-copilot') {
+      return runPagesStyleHandler(request, env, gradingCopilotGet, gradingCopilotPost);
     }
 
     if (url.pathname === '/') {
