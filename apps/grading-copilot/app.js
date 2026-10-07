@@ -12,9 +12,10 @@ async function api(payload){
 (async()=>{
   try{
     const s=await api({action:"status"});
-    statusEl.textContent=`Canvas service ready · ${s.canvasHost} · writes ${s.writesEnabled?"enabled":"disabled"}`;
+    const identity=await api({action:"verifyIdentity"});
+    statusEl.textContent="Canvas token authenticated"+(identity.displayName?" as "+identity.displayName:"")+" · "+s.canvasHost+" · writes "+(s.writesEnabled?"enabled":"disabled");
   }catch(e){
-    statusEl.textContent="Canvas service needs attention · "+e.message;
+    statusEl.textContent="Canvas authentication needs attention · "+e.message;
   }
 })();
 
@@ -28,11 +29,11 @@ courseForm.onsubmit=async e=>{
   try{
     const course=await api({action:"verifyCourse",courseId:courseId.value.trim()});
     connectedCourseId=course.courseId;
-    courseMessage.textContent=`Connected: ${course.courseName||course.courseCode||"Canvas course"} · Course ID ${course.courseId}`;
+    courseMessage.textContent="Connected: "+(course.courseName||course.courseCode||"Canvas course")+" · Course ID "+course.courseId;
     const assignments=await api({action:"listAssignments",courseId:connectedCourseId});
-    assignment.innerHTML='<option value="">Select an assignment…</option>'+assignments.map(x=>`<option value="${x.id}">${x.name} · ${x.points_possible??"—"} pts</option>`).join("");
+    assignment.innerHTML='<option value="">Select an assignment…</option>'+assignments.map(x=>'<option value="'+x.id+'">'+x.name+' · '+(x.points_possible??"—")+' pts</option>').join("");
     assignment.disabled=false;
-    result.textContent=`${assignments.length} assignments loaded from Canvas.`;
+    result.textContent=assignments.length+" assignments loaded from Canvas.";
   }catch(e){
     assignment.innerHTML='<option value="">Course connection failed</option>';
     courseMessage.textContent="Course connection needs attention · "+e.message;
@@ -45,7 +46,7 @@ assignment.onchange=async()=>{
   try{
     const s=await api({action:"listSubmissions",courseId:connectedCourseId,assignmentId:assignment.value});
     const submitted=s.filter(x=>x.submitted_at).length;
-    result.textContent=`Canvas returned ${s.length} enrollment records; ${submitted} have a submitted-at timestamp. No grades have been written.`;
+    result.textContent="Canvas returned "+s.length+" enrollment records; "+submitted+" have a submitted-at timestamp. No grades have been written.";
   }catch(e){
     result.textContent="Submission load needs attention · "+e.message;
   }
